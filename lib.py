@@ -1,3 +1,4 @@
+from PySide2.QtCore import QPointF
 class V2d:
     def __init__(self, x=0.0, y=0.0):
         self.x = x
@@ -6,6 +7,9 @@ class V2d:
     def setxy(self, x, y):
         self.x = x
         self.y = y
+
+    def pointf(self):
+        return QPointF(self.x, self.y)
 
     def ix(self):
         return int(self.x)

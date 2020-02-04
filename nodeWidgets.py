@@ -8,9 +8,14 @@ _KNOB_OFFSET = 20
 _KNOB_SIZE = 10
 _NODE_BORDER = 10
 
+
 class ChaosScene(QGraphicsScene):
-    def __init__(self, node_data:NodeData):
+    def __init__(self, view, node_data:NodeData):
         super(ChaosScene, self).__init__()
+        self.view = view
+        self.dragging = False
+        self.mouse_pos = QPointF()
+        self.mouse_press_pos = QPointF()
         self.background_color = Qt.gray
         self.grid_size = V2d(50, 50)
         self.painter : QPainter = None
@@ -20,16 +25,10 @@ class ChaosScene(QGraphicsScene):
         self.addItem(node_data.nodes[2])
         self.addItem(node_data.nodes[3])
         self.selecting = False
-        self.mpress_pos = V2d()
-        self.mmove_pos = V2d()
         self.selection_rect = QRect()
-        # self.text = self.addText('NODE CHAOS')
 
     def drawBackground(self, painter:QPainter, rect:QRectF):
         self.painter = painter
-        super(ChaosScene, self).drawBackground(painter, rect)
-        # self.text.setPos(rect.left(), rect.top())
-
         painter.setBrush(QColor(150, 150, 150))
         painter.drawRect(rect)
         painter.setPen(QColor(100, 100, 100, 100))
@@ -37,40 +36,43 @@ class ChaosScene(QGraphicsScene):
             painter.drawLine(rect.x() + x, rect.y(), rect.x() + x, int(rect.bottom()))
         for y in range(0, int(rect.width()), self.grid_size.ix()):
             painter.drawLine(rect.x(), rect.y() + y, rect.right(), rect.y() + y)
-        if self.selecting:
-            # print(self.selecting, self.mpress_pos, self.mmove_pos)
+
+        if self.dragging:
             painter.setPen(Qt.white)
-            painter.setBrush(QColor(255, 255, 255, 30))
-            # painter.drawRect(self.mpress_pos.x, self.mpress_pos.y, self.mmove_pos.x-self.mpress_pos.x, self.mmove_pos.y-self.mpress_pos.y)
-            painter.drawRect(self.selection_rect)
-
-
-    def mousePressEvent(self, event:QGraphicsSceneMouseEvent):
-        super(ChaosScene, self).mousePressEvent(event)
-        if self.selectedItems():
-            return
-        self.selecting = True
-        self.mpress_pos.setxy(event.scenePos().x(), event.scenePos().y())
-
-    def mouseReleaseEvent(self, event:QGraphicsSceneMouseEvent):
-        super(ChaosScene, self).mouseReleaseEvent(event)
-        self.selecting = False
+            painter.setBrush(QColor(255, 255, 255, 50))
+            painter.drawRect(self.rect())
+        super(ChaosScene, self).drawForeground(painter, rect)
         self.update()
-        self.selection_rect.setCoords(self.mpress_pos.x, self.mpress_pos.y, self.mmove_pos.x, self.mmove_pos.y)
 
+    def rect(self):
+        return QRectF(self.mouse_press_pos.x(),
+                             self.mouse_press_pos.y(),
+                             self.mouse_pos.x() - self.mouse_press_pos.x(),
+                             self.mouse_pos.y() - self.mouse_press_pos.y())
 
-    def mouseMoveEvent(self, event:QGraphicsSceneMouseEvent):
+    def mousePressEvent(self, event):
+        if not self.itemAt(event.scenePos(), self.view.transform()):
+            self.clearSelection()
+            self.dragging = True
+        else:
+            self.dragging = False
+        self.mouse_pos = event.scenePos()
+        self.mouse_press_pos = event.scenePos()
+        super(ChaosScene, self).mousePressEvent(event)
+        event.accept()
+        self.update()
+
+    def mouseReleaseEvent(self, event):
+        self.dragging = False
+        for item in self.items():
+            if self.rect().contains(item.selection_rect):
+                item.setSelected(True)
+        self.update()
+        super(ChaosScene, self).mouseReleaseEvent(event)
+        event.accept()
+
+    def mouseMoveEvent(self, event):
+        self.mouse_pos = event.scenePos()
         super(ChaosScene, self).mouseMoveEvent(event)
         self.update()
-        self.mmove_pos.setxy(event.scenePos().x(), event.scenePos().y())
-        self.selection_rect.setCoords(self.mpress_pos.x, self.mpress_pos.y, self.mmove_pos.x, self.mmove_pos.y)
-
-
-    def select_rect(self):
-        for node in self.node_data.nodes:
-            if self.selection_rect.contains(node.position.x, node.position.y):
-                node.setSelected(True)
-            else:
-                node.setSelected(False)
-
-            
+        event.accept()
