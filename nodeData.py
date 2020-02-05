@@ -71,7 +71,4 @@ class Knob:
 class NodeData:
     def __init__(self):
         self.nodes : [Node] = []
-        self.nodes.append(Node(V2d(50, 50)))
-        self.nodes.append(Node(V2d(50, 150)))
-        self.nodes.append(Node(V2d(50, -50)))
-        self.nodes.append(Node(V2d(50, 250)))
+        self.nodes.append(Node(V2d(150, 150)))
