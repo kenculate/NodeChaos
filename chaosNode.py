@@ -20,6 +20,8 @@ class ChaosNode(QGraphicsItem):
         super(ChaosNode, self).__init__()
         self.setPos(position.pointf())
         self.name = name
+        self.title = ''
+        self.text = ''
         self.position = position
         self.size = size
         self.setFlag(QGraphicsItem.ItemIsSelectable)
@@ -51,7 +53,7 @@ class ChaosNode(QGraphicsItem):
     def boundingRect(self):
         return QRect(0, 0, self.size.x, self.size.y)
 
-    def scaleRect(self, rect, x, y):
+    def scale_rect(self, rect, x, y):
         return QRect(rect.x()+x, rect.y()+y, rect.width()-(x*2), rect.height()-(y*2))
 
     def paint(self, painter:QPainter, option, widget):
@@ -60,10 +62,17 @@ class ChaosNode(QGraphicsItem):
         else:
             painter.setBrush(QBrush(self.default_gradient))
 
-        painter.drawRoundedRect(self.scaleRect(self.boundingRect(), _KNOB_SIZE/2, 0), 10, 10)
+        painter.drawRoundedRect(self.scale_rect(self.boundingRect(), _KNOB_SIZE / 2, 0), 10, 10)
         painter.drawLine(_KNOB_SIZE/2, 30, self.size.x-_KNOB_SIZE/2, 30)
         painter.setPen(Qt.white)
-        painter.drawText(20, 20, f'{self.name} : {len(self.connections)}')
+        if not self.title:
+            painter.drawText(20, 20, f'{self.name} : {len(self.connections)}')
+        else:
+            painter.drawText(20, 20, self.title)
+
+        if self.text:
+            painter.setPen(Qt.black)
+            painter.drawText(self.scale_rect(self.boundingRect(), _KNOB_SIZE, 50), self.text)
         for connection in self.connections:
             connection.update_path(self.scene())
 
@@ -79,12 +88,14 @@ class Knob(QGraphicsRectItem):
         self.knobType = knob_type
         self.index = len([n for n in node.knobs if n.knobType == knob_type]) + 1
         if knob_type == KnobType.Input:
-            self.setBrush(QColor(50, 200, 200))
+            # self.setBrush(QColor(50, 200, 200))
+            self.setBrush(QColor(44, 78, 133))
             self.setRect(node.boundingRect().width() - _KNOB_SIZE,
                          self.index * _KNOB_OFFSET,
                          _KNOB_SIZE, _KNOB_SIZE)
         else:
-            self.setBrush(QColor(50, 100, 100))
+            # self.setBrush(QColor(50, 100, 100))
+            self.setBrush(QColor(147, 175, 219))
             self.setRect(0,
                          self.index * _KNOB_OFFSET,
                          _KNOB_SIZE, _KNOB_SIZE)
@@ -98,7 +109,8 @@ class Connection:
         self.source = source
         self.destination = destination
         self.path_item = QGraphicsPathItem()
-        self.path_item.setPen(QPen(Qt.blue, 5))
+        self.path_item.setZValue(-1)
+        self.path_item.setPen(QPen(QColor(66, 135, 245), 15))
         self.path = QPainterPath()
         self.path.moveTo(source.rect().center())
         self.path.cubicTo(

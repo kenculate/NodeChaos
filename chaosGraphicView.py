@@ -5,6 +5,7 @@ from lib import *
 from chaosGraphicScene import ChaosGraphicScene
 from chaosNode import *
 import math
+import nodeDetail
 
 _ZOOM_STEP = 1.1
 
@@ -29,37 +30,65 @@ class ChaosGraphicView(QGraphicsView):
 
         self.path = QGraphicsPathItem()
         self.path.setFlag(QGraphicsItem.ItemIsSelectable, False)
-        # self.path.setZValue(1)
-        self.path.setPen(QPen(Qt.red, 5))
+        self.path.setPen(QPen(Qt.white, 5))
         self.scene.addItem(self.path)
         self.selected_knob =None
         for node in self.node_data.nodes:
-            self.scene.addItem(node)
-            for knob in node.knobs:
-                self.scene.addItem(knob)
-                knob.setParentItem(node)
+            self.add_node(node)
 
         self.__panning = False
         self.__last_pos = QPointF()
         self.__current_zoom = 1
         self.setRenderHint(QPainter.Antialiasing)
         self.setViewportUpdateMode(QGraphicsView.FullViewportUpdate)
-        # self.centerOn(self.sceneRect().center())
         self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.setResizeAnchor(QGraphicsView.AnchorUnderMouse)
         self.setDragMode(QGraphicsView.RubberBandDrag)
         self.setTransformationAnchor(QGraphicsView.AnchorUnderMouse)
+        self.node_editor = nodeDetail.NodeDetail(None, self)
+        self.node_editor.hide()
 
-    def paintEvent(self, event):
-        super(ChaosGraphicView, self).paintEvent(event)
-        self.update()
-        self.scene.update()
+    def add_node(self, node):
+        self.scene.addItem(node)
+        for knob in node.knobs:
+            self.scene.addItem(knob)
+            knob.setParentItem(node)
+
+    def mouseDoubleClickEvent(self, event):
+        item = self.itemAt(event.pos())
+        if item:
+            if type(item) == ChaosNode:
+                self.node_editor.open(item)
+
+    def keyPressEvent(self, event:QKeyEvent):
+        if event.key() == Qt.Key_N:
+            print(event.key())
+            self.node_data.nodes.append(ChaosNode(V2d(
+                self.mapToScene(self.__last_pos).x(),
+                self.mapToScene(self.__last_pos).y()))
+            )
+            self.add_node(self.node_data.nodes[-1])
+        elif event.key() == Qt.Key_F:
+            item_rect = QRect()
+            for item in self.items():
+                if item.boundingRect().top() < item_rect.top():
+                    item_rect.setTop(item.boundingRect().top())
+                if item.boundingRect().left() < item_rect.left():
+                    item_rect.setLeft(item.boundingRect().left())
+                if item.boundingRect().bottom() < item_rect.bottom():
+                    item_rect.setBottom(item.boundingRect().bottom())
+                if item.boundingRect().right() < item_rect.right():
+                    item_rect.setRight(item.boundingRect().right())
+            self.centerOn(item_rect.center())
+
+        super(ChaosGraphicView, self).keyPressEvent(event)
 
     def wheelEvent(self, event:QWheelEvent):
         zoom = _ZOOM_STEP if event.delta() >= 0 else 1.0/_ZOOM_STEP
         self.scale(zoom, zoom)
         self.__current_zoom = self.transform().m11()
+
         rect = self.scene.sceneRect()
         rect.setLeft(rect.left() + (rect.width() * 0.1 * math.copysign(1, event.delta())))
         rect.setRight(rect.right() + (rect.width() * -0.1 * math.copysign(1, event.delta())))
@@ -67,8 +96,6 @@ class ChaosGraphicView(QGraphicsView):
         rect.setBottom(rect.bottom() + (rect.height() * -0.1 * math.copysign(1, event.delta())))
 
         self.scene.setSceneRect(rect)
-        # self.centerOn(self.scene.sceneRect().center())
-        print(rect, (event.delta()/event.delta()))
 
     def mousePressEvent(self, event:QMouseEvent):
         self.__panning = False
@@ -80,26 +107,27 @@ class ChaosGraphicView(QGraphicsView):
 
         item = self.itemAt(event.pos())
         if item:
-            print('item', item)
             if type(item) == Knob:
                 if self.selected_knob:
                     if item.node == self.selected_knob:
-                        self.selected_knob = None
-                        self.path.setVisible(False)
+                        self.toggle_connection(False)
                     else:
                         self.selected_knob.node.add_connection(self.scene, self.selected_knob, item)
+                        self.toggle_connection(False)
                 else:
                     self.selected_knob = item
-                    self.path.setVisible(True)
+                    self.toggle_connection(True)
                     self.draw_current_edge(event.pos())
             else:
-                self.selected_knob = None
-                self.path.setVisible(False)
+                self.toggle_connection(False)
         else:
-            self.selected_knob = None
-            self.path.setVisible(False)
-
+            self.toggle_connection(False)
         super(ChaosGraphicView, self).mousePressEvent(event)
+
+    def toggle_connection(self, toggle):
+        if not toggle:
+            self.selected_knob = None
+        self.path.setVisible(toggle)
 
     def mouseReleaseEvent(self, event:QMouseEvent):
         self.__panning = False
@@ -110,7 +138,9 @@ class ChaosGraphicView(QGraphicsView):
     def mouseMoveEvent(self, event:QMouseEvent):
         self.draw_current_edge(event.pos())
         if self.pan(event.pos()):
+            self.__last_pos = event.pos()
             return
+        self.__last_pos = event.pos()
         super(ChaosGraphicView, self).mouseMoveEvent(event)
 
     def pan(self, pos):
@@ -125,7 +155,6 @@ class ChaosGraphicView(QGraphicsView):
                 self.centerOn(self.mapToScene(center))
                 self.horizontalScrollBar().setValue(self.horizontalScrollBar().value() + delta.x())
                 self.verticalScrollBar().setValue(self.verticalScrollBar().value() + delta.y())
-                self.__last_pos = pos
                 rect = self.scene.sceneRect()
                 if delta.x() < 0:
                     if self.horizontalScrollBar().value() <= self.horizontalScrollBar().minimum():
