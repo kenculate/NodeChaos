@@ -3,7 +3,6 @@ from PySide2.QtCore import *
 from PySide2.QtGui import *
 from lib import *
 
-from nodeData import *
 
 _GRID_STEP = 2000
 _GRID_SUB_STEP = 200
@@ -13,7 +12,7 @@ class ChaosGraphicScene(QGraphicsScene):
 
     def drawBackground(self, painter:QPainter, rect:QRectF):
         self.painter = painter
-        painter.setBrush(QColor(150, 150, 150))
+        painter.setBrush(QColor(200, 200, 200))
         painter.drawRect(self.sceneRect())
         painter.drawEllipse(self.sceneRect().topLeft(), 50, 50)
         painter.setPen(Qt.black)
@@ -48,5 +47,4 @@ class ChaosGraphicScene(QGraphicsScene):
                     self.sceneRect().right(),
                     self.sceneRect().top()+y
                 )
-
-
+        painter.drawText(20, 20, f'items:{len(self.items())}')

@@ -1,11 +1,12 @@
+from PySide2.QtWidgets import *
 from chaosGraphicView import ChaosGraphicView
-from nodeData import *
+from chaosNode import ChaosNode
+from lib import *
 
 
 class NodeChaosEditor(QWidget):
     def __init__(self):
         super(NodeChaosEditor, self).__init__()
-        self.node_data = NodeData()
         self.ui()
 
     def ui(self):
