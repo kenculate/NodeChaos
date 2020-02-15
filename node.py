@@ -4,6 +4,7 @@ from PySide2.QtGui import *
 from lib import *
 from enum import Enum
 import random
+import uuid
 from nodeData import NodeDetail
 
 _KNOB_OFFSET = 40
@@ -15,20 +16,38 @@ class KnobType(Enum):
     Input = 1
     Output = 2
 
+    def json(self):
+        return self.value
 
-class ChaosNode(QGraphicsItem):
+
+class Node(QGraphicsItem):
 
     @staticmethod
     def FromJson(data):
-        position = V2d.FromJson(data.get('position', V2d()))
         name = data.get('data', '')
-        node = ChaosNode(position, name=name)
+        position = V2d.FromJson(data.get('position', V2d()))
+        node = Node(position, name=name)
+        node.id = data.get('id', 0)
         detail = NodeDetail.FromJson(node, data.get('detail', {}))
         node.detail = detail
+        knobs = data.get('knobs', [])
+        for i in range(len(knobs)):
+            node.knobs[i].id = knobs[i]['id']
         return node
 
+    def json(self):
+        return {
+            'id': str(self.id),
+            'name': self.name,
+            'position': self.position,
+            'detail': self.detail,
+            'knobs': [kn.json() for kn in self.knobs],
+            'connections': [c for c in self.connections]
+        }
+
     def __init__(self, position=V2d(0, 0), size=V2d(200, 200), name='Node'):
-        super(ChaosNode, self).__init__()
+        super(Node, self).__init__()
+        self.id = uuid.uuid1()
         self.setPos(position.pointf())
         self.detail = NodeDetail(self)
         self.name = name
@@ -55,9 +74,6 @@ class ChaosNode(QGraphicsItem):
         self.selected_gradient.setColorAt(30.0 / self.size.y, Qt.gray)
         self.selected_gradient.setColorAt(30.1 / self.size.y, Qt.white)
         self.selected_gradient.setColorAt(1, Qt.gray)
-
-    def json(self):
-        return {'name':self.name, 'position':self.position.json(), 'detail':self.detail.json()}
 
     def add_connection(self, scene, source_knob, destination_knob):
         self.connections.append(Connection(source_knob, destination_knob))
@@ -92,15 +108,31 @@ class ChaosNode(QGraphicsItem):
 
 
 class Knob(QGraphicsRectItem):
-    def __init__(self, node: ChaosNode, knob_type=KnobType.Input):
+    @staticmethod
+    def FromJson(node, knob_type, data):
+        knob = Knob(node, knob_type)
+        knob.id = data.get('id', 0)
+        knob.knob_type = data.get('knob_type', KnobType.Input)
+        return knob
+
+    def json(self):
+        return {
+            'id': str(self.id),
+            'knob_type': self.knob_type,
+            'index': self.index,
+            'node': str(self.node.id)
+        }
+
+    def __init__(self, node: Node, knob_type=KnobType.Input):
         super(Knob, self).__init__()
+        self.id = uuid.uuid1()
         self.setFlag(QGraphicsItem.ItemIsSelectable)
         self.setAcceptDrops(True)
         self.setAcceptHoverEvents(True)
         self.setAcceptTouchEvents(True)
         self.node = node
-        self.knobType = knob_type
-        self.index = len([n for n in node.knobs if n.knobType == knob_type]) + 1
+        self.knob_type = knob_type
+        self.index = len([n for n in node.knobs if n.knob_type == knob_type]) + 1
         if knob_type == KnobType.Input:
             # self.setBrush(QColor(50, 200, 200))
             self.setBrush(QColor(44, 78, 133))
@@ -119,6 +151,18 @@ class Knob(QGraphicsRectItem):
 
 
 class Connection:
+    @staticmethod
+    def FromJson(source, destination):
+        connection = Connection(source, destination)
+        return connection
+
+    def json(self):
+        d ={
+            'source': self.source.json(),
+            'destination': self.destination.json()
+        }
+        return d
+
     def __init__(self, source: Knob, destination: Knob):
         self.source = source
         self.destination = destination

@@ -2,8 +2,10 @@ from PySide2.QtCore import QPointF
 
 
 def to_json(obj):
-    return obj.json()
-
+    try:
+        return obj.json()
+    except Exception as err:
+        print('ERROR TO JSON', obj, err)
 
 class V2d:
     def __init__(self, x=0.0, y=0.0):

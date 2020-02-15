@@ -1,6 +1,6 @@
 from PySide2.QtWidgets import *
 from graphicView import ChaosGraphicView
-from node import ChaosNode
+from node import Node
 from lib import *
 import json
 
@@ -52,11 +52,20 @@ class NodeChaosEditor(QMainWindow):
             file = open(file_name, 'r')
             data = json.load(file)
             for d in data:
-                node = ChaosNode.FromJson(d)
+                node = Node.FromJson(d)
                 self.graph_view.node_data.nodes.append(node)
                 self.graph_view.add_node(node)
-            self.graph_view.update()
-            self.graph_view.scene.update()
+
+            for node in data:
+                for connection in node.get('connections', []):
+                    _node = [n for n in self.graph_view.node_data.nodes if n.id == node['id']]
+                    if _node:
+                        _node = _node[0]
+                        _source_knob = [kn for kn in _node.knobs if kn.id == connection['source']['id']]
+                        _destination_node = [n for n in self.graph_view.node_data.nodes if n.id == connection['destination']['node']]
+                        _destination_knob = [kn for kn in _destination_node[0].knobs if kn.id == connection['destination']['id']]
+                        _node.add_connection(self.graph_view.scene, _source_knob[0], _destination_knob[0])
+
 
     def setup_scene(self):
         pass

@@ -3,8 +3,8 @@ from lib import *
 
 class NodeData:
     def __init__(self):
-        from node import ChaosNode
-        self.nodes: [ChaosNode] = []
+        from node import Node
+        self.nodes: [Node] = []
         # self.nodes.append(ChaosNode(V2d(100, 100), name='Node1'))
         # self.nodes.append(ChaosNode(V2d(350, 100), name='Node2'))
 
@@ -19,7 +19,11 @@ class NodeDetail:
         self.text = ''
 
     def json(self):
-        return {'title': self.title, 'text':self.text}
+        return {
+            'title': self.title,
+            'text':self.text,
+            # 'node': str(self.node.id)
+        }
 
     @staticmethod
     def FromJson(node, data):

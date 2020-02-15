@@ -51,13 +51,13 @@ class ChaosGraphicView(QGraphicsView):
     def mouseDoubleClickEvent(self, event):
         item = self.itemAt(event.pos())
         if item:
-            if type(item) == ChaosNode:
+            if type(item) == Node:
                 self.node_editor.open(item)
 
     def keyPressEvent(self, event:QKeyEvent):
         if event.key() == Qt.Key_N:
             print(event.key())
-            self.node_data.nodes.append(ChaosNode(V2d(
+            self.node_data.nodes.append(Node(V2d(
                 self.mapToScene(self.__last_pos).x(),
                 self.mapToScene(self.__last_pos).y()))
             )
@@ -175,7 +175,7 @@ class ChaosGraphicView(QGraphicsView):
             maped = self.selected_knob.mapToScene(self.selected_knob.rect().center())
             t1 = QPointF(50, 0)
             t2 = QPointF(-50, 0)
-            if self.selected_knob.knobType == KnobType.Output:
+            if self.selected_knob.knob_type == KnobType.Output:
                 t1 = QPointF(-50, 0)
                 t2 = QPointF(50, 0)
             path = QPainterPath()
