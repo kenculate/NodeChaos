@@ -1,8 +1,24 @@
 from PySide2.QtCore import QPointF
+
+
+def to_json(obj):
+    return obj.json()
+
+
 class V2d:
     def __init__(self, x=0.0, y=0.0):
         self.x = x
         self.y = y
+
+    @staticmethod
+    def FromJson(data):
+        v = V2d()
+        v.x = data.get('x', 0.0)
+        v.y = data.get('y', 0.0)
+        return v
+
+    def xy(self):
+        return (self.x, self.y)
 
     def setxy(self, x, y):
         self.x = x
@@ -25,3 +41,6 @@ class V2d:
 
     def __str__(self):
         return f'({self.x},{self.y})'
+
+    def json(self):
+        return {'x': self.x, 'y': self.y}

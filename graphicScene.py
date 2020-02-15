@@ -14,7 +14,6 @@ class ChaosGraphicScene(QGraphicsScene):
         self.painter = painter
         painter.setBrush(QColor(200, 200, 200))
         painter.drawRect(self.sceneRect())
-        painter.drawEllipse(self.sceneRect().topLeft(), 50, 50)
         painter.setPen(Qt.black)
         for x in range(0, int(self.sceneRect().width()), _GRID_STEP):
             painter.drawLine(
@@ -47,4 +46,3 @@ class ChaosGraphicScene(QGraphicsScene):
                     self.sceneRect().right(),
                     self.sceneRect().top()+y
                 )
-        painter.drawText(20, 20, f'items:{len(self.items())}')

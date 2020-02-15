@@ -4,6 +4,7 @@ from PySide2.QtGui import *
 from lib import *
 from enum import Enum
 import random
+from nodeData import NodeDetail
 
 _KNOB_OFFSET = 40
 _KNOB_SIZE = 20
@@ -16,12 +17,21 @@ class KnobType(Enum):
 
 
 class ChaosNode(QGraphicsItem):
+
+    @staticmethod
+    def FromJson(data):
+        position = V2d.FromJson(data.get('position', V2d()))
+        name = data.get('data', '')
+        node = ChaosNode(position, name=name)
+        detail = NodeDetail.FromJson(node, data.get('detail', {}))
+        node.detail = detail
+        return node
+
     def __init__(self, position=V2d(0, 0), size=V2d(200, 200), name='Node'):
         super(ChaosNode, self).__init__()
         self.setPos(position.pointf())
+        self.detail = NodeDetail(self)
         self.name = name
-        self.title = ''
-        self.text = ''
         self.position = position
         self.size = size
         self.setFlag(QGraphicsItem.ItemIsSelectable)
@@ -46,6 +56,9 @@ class ChaosNode(QGraphicsItem):
         self.selected_gradient.setColorAt(30.1 / self.size.y, Qt.white)
         self.selected_gradient.setColorAt(1, Qt.gray)
 
+    def json(self):
+        return {'name':self.name, 'position':self.position.json(), 'detail':self.detail.json()}
+
     def add_connection(self, scene, source_knob, destination_knob):
         self.connections.append(Connection(source_knob, destination_knob))
         scene.addItem(self.connections[-1].path_item)
@@ -57,6 +70,7 @@ class ChaosNode(QGraphicsItem):
         return QRect(rect.x()+x, rect.y()+y, rect.width()-(x*2), rect.height()-(y*2))
 
     def paint(self, painter:QPainter, option, widget):
+        self.position.setxy(self.pos().x(), self.pos().y())
         if self.isSelected():
             painter.setBrush(QBrush(self.selected_gradient))
         else:
@@ -65,14 +79,14 @@ class ChaosNode(QGraphicsItem):
         painter.drawRoundedRect(self.scale_rect(self.boundingRect(), _KNOB_SIZE / 2, 0), 10, 10)
         painter.drawLine(_KNOB_SIZE/2, 30, self.size.x-_KNOB_SIZE/2, 30)
         painter.setPen(Qt.white)
-        if not self.title:
+        if not self.detail.title:
             painter.drawText(20, 20, f'{self.name} : {len(self.connections)}')
         else:
-            painter.drawText(20, 20, self.title)
+            painter.drawText(20, 20, self.detail.title)
 
-        if self.text:
+        if self.detail.text:
             painter.setPen(Qt.black)
-            painter.drawText(self.scale_rect(self.boundingRect(), _KNOB_SIZE, 50), self.text)
+            painter.drawText(self.scale_rect(self.boundingRect(), _KNOB_SIZE, 50), self.detail.text)
         for connection in self.connections:
             connection.update_path(self.scene())
 

@@ -2,19 +2,14 @@ from PySide2.QtWidgets import *
 from PySide2.QtCore import *
 from PySide2.QtGui import *
 from lib import *
-from chaosGraphicScene import ChaosGraphicScene
-from chaosNode import *
+from graphicScene import ChaosGraphicScene
+from node import *
+from nodeData import *
+
 import math
-import nodeDetail
+import nodeDetailDialog
 
 _ZOOM_STEP = 1.1
-
-
-class NodeData:
-    def __init__(self):
-        self.nodes: [ChaosNode] = []
-        self.nodes.append(ChaosNode(V2d(100, 100), name='Node1'))
-        self.nodes.append(ChaosNode(V2d(350, 100), name='Node2'))
 
 
 class ChaosGraphicView(QGraphicsView):
@@ -22,8 +17,6 @@ class ChaosGraphicView(QGraphicsView):
         super(ChaosGraphicView, self).__init__(parent)
         self.scene = ChaosGraphicScene()
         self.node_data = NodeData()
-        self.hscrol = V2d(self.horizontalScrollBar().minimum(), self.horizontalScrollBar().maximum())
-        self.vscrol = V2d(self.verticalScrollBar().minimum(), self.verticalScrollBar().maximum())
         self.setScene(self.scene)
         self.setFixedSize(900, 700)
         self.scene.setSceneRect(self.geometry())
@@ -32,7 +25,7 @@ class ChaosGraphicView(QGraphicsView):
         self.path.setFlag(QGraphicsItem.ItemIsSelectable, False)
         self.path.setPen(QPen(Qt.white, 5))
         self.scene.addItem(self.path)
-        self.selected_knob =None
+        self.selected_knob = None
         for node in self.node_data.nodes:
             self.add_node(node)
 
@@ -46,7 +39,7 @@ class ChaosGraphicView(QGraphicsView):
         self.setResizeAnchor(QGraphicsView.AnchorUnderMouse)
         self.setDragMode(QGraphicsView.RubberBandDrag)
         self.setTransformationAnchor(QGraphicsView.AnchorUnderMouse)
-        self.node_editor = nodeDetail.NodeDetail(None, self)
+        self.node_editor = nodeDetailDialog.NodeDetailDialog(None, self)
         self.node_editor.hide()
 
     def add_node(self, node):

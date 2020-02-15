@@ -3,9 +3,9 @@ from PySide2.QtCore import *
 from PySide2.QtGui import *
 
 
-class NodeDetail(QDialog):
+class NodeDetailDialog(QDialog):
     def __init__(self, node, parent):
-        super(NodeDetail, self).__init__(parent=parent)
+        super(NodeDetailDialog, self).__init__(parent=parent)
         self.setStyleSheet('''
         background-color:
         qlineargradient(spread:pad, x1:0, y1:0, x2:0, y2:1, stop:0 rgb(173, 173, 173), stop:1 rgb(131, 131, 131));
@@ -31,13 +31,13 @@ class NodeDetail(QDialog):
         self.pb_save.clicked.connect(self.save)
 
     def open(self, node):
-        self.txt_text.setPlainText(node.text)
-        self.txt_title.setText(node.title)
+        self.txt_text.setPlainText(node.detail.text)
+        self.txt_title.setText(node.detail.title)
         self.node = node
         self.exec_()
 
     def save(self):
-        self.node.title = self.txt_title.text()
-        self.node.text = self.txt_text.toPlainText()
+        self.node.detail.title = self.txt_title.text()
+        self.node.detail.text = self.txt_text.toPlainText()
         self.close()
 
