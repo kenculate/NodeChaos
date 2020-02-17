@@ -1,5 +1,5 @@
 from lib import *
-
+import uuid
 
 class NodeData:
     def __init__(self):
@@ -11,8 +11,8 @@ class NodeData:
 
     def json(self):
         return {
-            'nodes': [n.json() for n in self.nodes],
-            'items': [i.json() for i in self.items]
+            'nodes': self.nodes,
+            'items': self.items
         }
 
 
@@ -20,15 +20,23 @@ class Item:
     @staticmethod
     def FromJson(data):
         item = Item()
+        item.id = data.get('id', 0)
         item.name = data.get('name', '')
         item.description = data.get('description', '')
         item.owned = data.get('owned', False)
         return item
 
     def json(self):
-        return self.__dict__
+        return {
+            'id': str(self.id),
+            'name': self.name,
+            'description': self.description,
+            'owned': self.owned
+        }
 
     def __init__(self):
+        self.id = uuid.uuid1()
+
         self.name = ''
         self.description = ''
         self.owned = False
@@ -46,8 +54,8 @@ class NodeDetail:
         return {
             'title': self.title,
             'text': self.text,
-            'items': [i.json() for i in self.items],
-            'required_items': [i.json() for i in self.required_items]
+            'items': self.items,
+            'required_items': self.required_items
             # 'node': str(self.node.id)
         }
 

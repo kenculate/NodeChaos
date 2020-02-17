@@ -19,6 +19,9 @@ class V2d:
         v.y = data.get('y', 0.0)
         return v
 
+    def json(self):
+        return {'x': self.x, 'y': self.y}
+
     def xy(self):
         return self.x, self.y
 
@@ -43,6 +46,3 @@ class V2d:
 
     def __str__(self):
         return f'({self.x},{self.y})'
-
-    def json(self):
-        return {'x': self.x, 'y': self.y}

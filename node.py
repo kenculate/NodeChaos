@@ -41,7 +41,7 @@ class Node(QGraphicsItem):
             'name': self.name,
             'position': self.position,
             'detail': self.detail,
-            'knobs': [kn.json() for kn in self.knobs],
+            'knobs': self.knobs,
             'connections': [c for c in self.connections]
         }
 
@@ -157,11 +157,10 @@ class Connection:
         return connection
 
     def json(self):
-        d ={
-            'source': self.source.json(),
-            'destination': self.destination.json()
+        return {
+            'source': self.source,
+            'destination': self.destination
         }
-        return d
 
     def __init__(self, source: Knob, destination: Knob):
         self.source = source

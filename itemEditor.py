@@ -3,6 +3,7 @@ from PySide2.QtGui import *
 from PySide2.QtCore import *
 from nodeData import Item
 
+
 class ItemEditor(QWidget):
     def __init__(self, parent):
         super(ItemEditor, self).__init__(parent=parent)

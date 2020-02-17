@@ -59,9 +59,8 @@ class ChaosGraphicView(QGraphicsView):
             if type(item) == Node:
                 self.node_editor.open(item)
 
-    def keyPressEvent(self, event:QKeyEvent):
+    def keyPressEvent(self, event: QKeyEvent):
         if event.key() == Qt.Key_N:
-            print(event.key())
             self.node_data.nodes.append(Node(V2d(
                 self.mapToScene(self.__last_pos).x(),
                 self.mapToScene(self.__last_pos).y()))
