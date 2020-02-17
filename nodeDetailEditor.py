@@ -3,9 +3,10 @@ from PySide2.QtCore import *
 from PySide2.QtGui import *
 
 
-class NodeDetailDialog(QDialog):
+class NodeDetailEditor(QDialog):
     def __init__(self, node, parent):
-        super(NodeDetailDialog, self).__init__(parent=parent)
+        super(NodeDetailEditor, self).__init__(parent=parent)
+        self.resize(QSize(400, 400))
         self.setStyleSheet('''
         background-color:
         qlineargradient(spread:pad, x1:0, y1:0, x2:0, y2:1, stop:0 rgb(173, 173, 173), stop:1 rgb(131, 131, 131));

@@ -1,38 +1,23 @@
 from PySide2.QtWidgets import *
 from graphicView import ChaosGraphicView
 from node import Node
-from lib import *
 import json
+from itemEditor import ItemEditor
+from nodeChaosEditor_UI import Ui_MainWindow
 
 
-class NodeChaosEditor(QMainWindow):
+class NodeChaosEditor(Ui_MainWindow, QMainWindow):
     def __init__(self):
         super(NodeChaosEditor, self).__init__()
-        self.ui()
-
-    def ui(self):
-        self.setFixedSize(900, 700)
-        menu = QMenu('File', self)
-        save_action = QAction('Save', self)
-        menu.addAction(save_action)
-        save_action.triggered.connect(self.save)
-
-        load_action = QAction('Load', self)
-        menu.addAction(load_action)
-        load_action.triggered.connect(self.load)
-
-        self.menuBar().addMenu(menu)
-        self.layout = QVBoxLayout(self)
-        self.layout.setMargin(0)
-        self.graph_view = ChaosGraphicView(parent=self)
-        self.graph_view.setAcceptDrops(True)
-        self.graph_view.setStyleSheet('border:2px')
-        self.graph_view.show()
-        self.layout.addWidget(self.graph_view)
-        self.setCentralWidget(self.graph_view)
-        #
-        self.show()
-        self.setup_scene()
+        self.setupUi(self)
+        self.graph_view = ChaosGraphicView(parent=None)
+        self.item_editor = ItemEditor(parent=self.graph_view)
+        self.horizontalLayout.insertWidget(0, self.graph_view)
+        self.horizontalLayout.addWidget(self.item_editor)
+        self.item_editor.setMaximumWidth(400)
+        self.action_save.triggered.connect(self.save)
+        self.action_load.triggered.connect(self.load)
+        self.showMaximized()
 
     def save(self):
         from lib import to_json
@@ -43,6 +28,7 @@ class NodeChaosEditor(QMainWindow):
             file.close()
 
     def load(self):
+        from nodeData import Item
         self.graph_view.node_data.nodes.clear()
         for item in self.graph_view.scene.items():
             self.graph_view.scene.removeItem(item)
@@ -51,12 +37,13 @@ class NodeChaosEditor(QMainWindow):
         if result:
             file = open(file_name, 'r')
             data = json.load(file)
-            for d in data:
-                node = Node.FromJson(d)
+            # nodes
+            nodes = data.get('nodes', [])
+            for n in nodes:
+                node = Node.FromJson(n)
                 self.graph_view.node_data.nodes.append(node)
                 self.graph_view.add_node(node)
-
-            for node in data:
+            for node in nodes:
                 for connection in node.get('connections', []):
                     _node = [n for n in self.graph_view.node_data.nodes if n.id == node['id']]
                     if _node:
@@ -65,7 +52,10 @@ class NodeChaosEditor(QMainWindow):
                         _destination_node = [n for n in self.graph_view.node_data.nodes if n.id == connection['destination']['node']]
                         _destination_knob = [kn for kn in _destination_node[0].knobs if kn.id == connection['destination']['id']]
                         _node.add_connection(self.graph_view.scene, _source_knob[0], _destination_knob[0])
-
+            # items
+            items = data.get('items', [])
+            for item in items:
+                self.graph_view.node_data.items.append(Item.FromJson(item))
 
     def setup_scene(self):
         pass

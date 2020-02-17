@@ -5,9 +5,9 @@ from lib import *
 from graphicScene import ChaosGraphicScene
 from node import *
 from nodeData import *
-
+from itemEditor import ItemEditor
 import math
-import nodeDetailDialog
+import nodeDetailEditor
 
 _ZOOM_STEP = 1.1
 
@@ -18,7 +18,7 @@ class ChaosGraphicView(QGraphicsView):
         self.scene = ChaosGraphicScene()
         self.node_data = NodeData()
         self.setScene(self.scene)
-        self.setFixedSize(900, 700)
+        # self.setFixedSize(900, 700)
         self.scene.setSceneRect(self.geometry())
 
         self.path = QGraphicsPathItem()
@@ -39,8 +39,13 @@ class ChaosGraphicView(QGraphicsView):
         self.setResizeAnchor(QGraphicsView.AnchorUnderMouse)
         self.setDragMode(QGraphicsView.RubberBandDrag)
         self.setTransformationAnchor(QGraphicsView.AnchorUnderMouse)
-        self.node_editor = nodeDetailDialog.NodeDetailDialog(None, self)
+        self.item_editor = ItemEditor(self)
+        self.item_editor.hide()
+        self.node_editor = nodeDetailEditor.NodeDetailEditor(None, self)
         self.node_editor.hide()
+
+    def resizeEvent(self, event:QResizeEvent):
+        self.scene.setSceneRect(self.rect())
 
     def add_node(self, node):
         self.scene.addItem(node)
@@ -74,6 +79,8 @@ class ChaosGraphicView(QGraphicsView):
                 if item.boundingRect().right() < item_rect.right():
                     item_rect.setRight(item.boundingRect().right())
             self.centerOn(item_rect.center())
+        elif event.key() == Qt.Key_I:
+            self.item_editor.show()
 
         super(ChaosGraphicView, self).keyPressEvent(event)
 
@@ -102,7 +109,7 @@ class ChaosGraphicView(QGraphicsView):
         if item:
             if type(item) == Knob:
                 if self.selected_knob:
-                    if item.node == self.selected_knob:
+                    if item == self.selected_knob:
                         self.toggle_connection(False)
                     else:
                         self.selected_knob.node.add_connection(self.scene, self.selected_knob, item)

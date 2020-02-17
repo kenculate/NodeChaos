@@ -20,7 +20,7 @@ class V2d:
         return v
 
     def xy(self):
-        return (self.x, self.y)
+        return self.x, self.y
 
     def setxy(self, x, y):
         self.x = x
