@@ -79,6 +79,9 @@ class Node(QGraphicsItem):
         self.connections.append(Connection(source_knob, destination_knob))
         scene.addItem(self.connections[-1].path_item)
 
+    def rect(self):
+        return QRect(self.position.x, self.position.y, self.size.x, self.size.y)
+
     def boundingRect(self):
         return QRect(0, 0, self.size.x, self.size.y)
 
