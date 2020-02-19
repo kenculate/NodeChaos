@@ -16,10 +16,12 @@ class ChaosGraphicView(QGraphicsView):
     def __init__(self, parent):
         super(ChaosGraphicView, self).__init__(parent)
         self.scene = ChaosGraphicScene()
+        self.nodes = []
         self.node_data = NodeData()
+        self.scene.setSceneRect(0, 0, 99999, 99999)
         self.setScene(self.scene)
         # self.setFixedSize(900, 700)
-        self.scene.setSceneRect(self.geometry())
+        # self.scene.setSceneRect(self.geometry())
 
         self.path = QGraphicsPathItem()
         self.path.setFlag(QGraphicsItem.ItemIsSelectable, False)
@@ -44,10 +46,11 @@ class ChaosGraphicView(QGraphicsView):
         self.node_editor = nodeDetailEditor.NodeDetailEditor(None, self)
         self.node_editor.hide()
 
-    def resizeEvent(self, event:QResizeEvent):
-        self.scene.setSceneRect(self.rect())
+    # def resizeEvent(self, event:QResizeEvent):
+    #     self.scene.setSceneRect(self.geometry())
 
     def add_node(self, node):
+        self.nodes.append(node)
         self.scene.addItem(node)
         for knob in node.knobs:
             self.scene.addItem(knob)
@@ -67,34 +70,41 @@ class ChaosGraphicView(QGraphicsView):
             )
             self.add_node(self.node_data.nodes[-1])
         elif event.key() == Qt.Key_F:
-            item_rect = QRect()
-            for item in self.items():
-                if item.boundingRect().top() < item_rect.top():
-                    item_rect.setTop(item.boundingRect().top())
-                if item.boundingRect().left() < item_rect.left():
-                    item_rect.setLeft(item.boundingRect().left())
-                if item.boundingRect().bottom() < item_rect.bottom():
-                    item_rect.setBottom(item.boundingRect().bottom())
-                if item.boundingRect().right() < item_rect.right():
-                    item_rect.setRight(item.boundingRect().right())
+            if len(self.nodes) == 0:return
+            item_rect = self.nodes[0].rect()
+            for item in self.nodes:
+                print(item.rect().topLeft(), item.rect().bottomRight())
+                if item.rect().top() < item_rect.top():
+                    item_rect.setTop(item.rect().top())
+                if item.rect().left() < item_rect.left():
+                    item_rect.setLeft(item.rect().left())
+                if item.rect().bottom() > item_rect.bottom():
+                    item_rect.setBottom(item.rect().bottom())
+                if item.rect().right() > item_rect.right():
+                    item_rect.setRight(item.rect().right())
+            self.setTransformationAnchor(QGraphicsView.AnchorViewCenter)
             self.centerOn(item_rect.center())
+            self.scale(1/self.__current_zoom, 1/self.__current_zoom)
+            self.__current_zoom = self.transform().m11()
         elif event.key() == Qt.Key_I:
             self.item_editor.show()
-
         super(ChaosGraphicView, self).keyPressEvent(event)
 
     def wheelEvent(self, event:QWheelEvent):
-        zoom = _ZOOM_STEP if event.delta() >= 0 else 1.0/_ZOOM_STEP
-        self.scale(zoom, zoom)
-        self.__current_zoom = self.transform().m11()
+        if event.delta() < 0 and self.__current_zoom < 0.05:
+            return
+        self.setTransformationAnchor(QGraphicsView.AnchorUnderMouse)
 
+        zoom = _ZOOM_STEP if event.delta() >= 0 else 1.0/_ZOOM_STEP
+        print(event.delta(), self.geometry().width() / self.scene.sceneRect().width())
         rect = self.scene.sceneRect()
         rect.setLeft(rect.left() + (rect.width() * 0.1 * math.copysign(1, event.delta())))
         rect.setRight(rect.right() + (rect.width() * -0.1 * math.copysign(1, event.delta())))
         rect.setTop(rect.top() + (rect.height() * 0.1 * math.copysign(1, event.delta())))
         rect.setBottom(rect.bottom() + (rect.height() * -0.1 * math.copysign(1, event.delta())))
-
-        self.scene.setSceneRect(rect)
+        self.scale(zoom, zoom)
+        self.__current_zoom = self.transform().m11()
+        wheel = math.copysign(1, event.delta())
 
     def mousePressEvent(self, event:QMouseEvent):
         self.__panning = False
@@ -171,7 +181,9 @@ class ChaosGraphicView(QGraphicsView):
                     if self.verticalScrollBar().value() >= self.verticalScrollBar().maximum():
                         self.verticalScrollBar().setMaximum(self.verticalScrollBar().maximum() + delta.y())
                         rect.setBottom(rect.bottom() + delta.y())
-                self.scene.setSceneRect(rect)
+                # self.scene.setSceneRect(rect)
+                self.draw_rect()
+
                 return True
         return False
 
