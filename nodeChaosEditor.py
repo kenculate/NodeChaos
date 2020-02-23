@@ -37,6 +37,12 @@ class NodeChaosEditor(Ui_MainWindow, QMainWindow):
         if result:
             file = open(file_name, 'r')
             data = json.load(file)
+            # items
+            items = data.get('items', [])
+            for item in items:
+                self.graph_view.node_data.items.append(Item.FromJson(item))
+            self.graph_view.item_editor.load(self.graph_view.node_data.items)
+
             # nodes
             nodes = data.get('nodes', [])
             for n in nodes:
@@ -52,10 +58,6 @@ class NodeChaosEditor(Ui_MainWindow, QMainWindow):
                         _destination_node = [n for n in self.graph_view.node_data.nodes if n.id == connection['destination']['node']]
                         _destination_knob = [kn for kn in _destination_node[0].knobs if kn.id == connection['destination']['id']]
                         _node.add_connection(self.graph_view.scene, _source_knob[0], _destination_knob[0])
-            # items
-            items = data.get('items', [])
-            for item in items:
-                self.graph_view.node_data.items.append(Item.FromJson(item))
 
     def setup_scene(self):
         pass

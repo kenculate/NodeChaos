@@ -64,4 +64,6 @@ class NodeDetail:
         detail = NodeDetail(node)
         detail.title = data.get('title', '')
         detail.text = data.get('text', '')
+        detail.items = data.get('items', [])
+        detail.required_items = data.get('required_items', [])
         return detail

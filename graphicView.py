@@ -182,7 +182,7 @@ class ChaosGraphicView(QGraphicsView):
                         self.verticalScrollBar().setMaximum(self.verticalScrollBar().maximum() + delta.y())
                         rect.setBottom(rect.bottom() + delta.y())
                 # self.scene.setSceneRect(rect)
-                self.draw_rect()
+                # self.draw_rect()
 
                 return True
         return False

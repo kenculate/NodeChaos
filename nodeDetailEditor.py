@@ -5,12 +5,24 @@ from PySide2.QtGui import *
 
 class NodeDetailEditor(QDialog):
     def __init__(self, node, parent):
+        self.graph_view = parent
         super(NodeDetailEditor, self).__init__(parent=parent)
         self.resize(QSize(800, 400))
         self.setStyleSheet('''
+        QWidget{
         background-color:
         qlineargradient(spread:pad, x1:0, y1:0, x2:0, y2:1, stop:0 rgb(173, 173, 173), stop:1 rgb(131, 131, 131));
         color:rgb(255, 255, 255);
+        QLabel{
+            background-color:transparent
+        }
+        }
+        QLabel{
+            background-color:transparent
+        }
+        QListView{
+        background-color:lightGray
+        }
         ''')
         self.h_layout = QHBoxLayout(self)
         self.layout = QVBoxLayout(self)
@@ -31,11 +43,10 @@ class NodeDetailEditor(QDialog):
         self.v_layout1.addWidget(self.list_item)
         self.v_layout2.addWidget(self.lbl_required_item)
         self.v_layout2.addWidget(self.list_required_item)
+
         self.lbl_title = QLabel('title:')
-        self.lbl_title.setStyleSheet('background-color: transparent')
         self.txt_title = QLineEdit()
         self.lbl_text = QLabel('text:')
-        self.lbl_text.setStyleSheet('background-color: transparent')
         self.txt_text = QPlainTextEdit()
         self.pb_save = QPushButton('save')
         self.pb_close = QPushButton('close')
@@ -53,9 +64,11 @@ class NodeDetailEditor(QDialog):
         self.list_required_item.setModel(self.required_item_model)
         self.list_item.setModel(self.item_model)
 
+
     def open(self, node):
         self.item_model.clear()
         self.required_item_model.clear()
+        # adding acquire items
         for item in self.parent().node_data.items:
             row = QStandardItem(item.name)
             row.setData(item, Qt.UserRole)
@@ -63,6 +76,7 @@ class NodeDetailEditor(QDialog):
             if item in node.detail.items:
                 row.setCheckState(Qt.Checked)
             self.item_model.insertRow(self.item_model.rowCount(),row)
+        # adding require items
         for item in self.parent().node_data.items:
             row = QStandardItem(item.name)
             row.setData(item, Qt.UserRole)
