@@ -22,10 +22,10 @@ class ItemEditor(QWidget):
         self.pb_add.clicked.connect(self.add_item)
         self.layout.addWidget(self.pb_add)
         self.layout.addWidget(self.list_view)
-        self.pb_close = QPushButton('close')
-        self.layout.addWidget(self.pb_close)
+        # self.pb_close = QPushButton('close')
+        # self.layout.addWidget(self.pb_close)
         self.model = QStandardItemModel()
-        self.pb_close.clicked.connect(self.close)
+        # self.pb_close.clicked.connect(self.close)
         self.list_view.setModel(self.model)
 
     def load(self, items):
@@ -40,7 +40,7 @@ class ItemEditor(QWidget):
         if result:
             row = QStandardItem(text)
             row.setCheckable(True)
-            self.model.insertRow(self.model.rowCount(), row)
+            self.model.appendRow(row)
             item = Item()
             item.name = text
             self.graph_view.node_data.items.append(item)

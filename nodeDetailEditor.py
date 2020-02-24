@@ -33,7 +33,7 @@ class NodeDetailEditor(QDialog):
         self.h_layout.addLayout(self.v_layout2)
         self.list_required_item = QListView()
         self.list_item = QListView()
-        self.lbl_item = QLabel('items')
+        self.lbl_item = QLabel('acquire items')
         self.list_item.setMaximumWidth(200)
         self.lbl_item.setMaximumWidth(200)
         self.lbl_required_item = QLabel('required items')
@@ -64,7 +64,6 @@ class NodeDetailEditor(QDialog):
         self.list_required_item.setModel(self.required_item_model)
         self.list_item.setModel(self.item_model)
 
-
     def open(self, node):
         self.item_model.clear()
         self.required_item_model.clear()
@@ -73,17 +72,17 @@ class NodeDetailEditor(QDialog):
             row = QStandardItem(item.name)
             row.setData(item, Qt.UserRole)
             row.setCheckable(True)
-            if item in node.detail.items:
+            if item.id in [i.id for i in node.detail.items]:
                 row.setCheckState(Qt.Checked)
-            self.item_model.insertRow(self.item_model.rowCount(),row)
+            self.item_model.appendRow(row)
         # adding require items
         for item in self.parent().node_data.items:
             row = QStandardItem(item.name)
             row.setData(item, Qt.UserRole)
             row.setCheckable(True)
-            if item in node.detail.required_items:
+            if item.id in [i.id for i in node.detail.required_items]:
                 row.setCheckState(Qt.Checked)
-            self.required_item_model.insertRow(self.required_item_model.rowCount(), row)
+            self.required_item_model.appendRow(row)
 
         self.txt_text.setPlainText(node.detail.text)
         self.txt_title.setText(node.detail.title)

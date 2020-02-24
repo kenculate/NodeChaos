@@ -34,6 +34,9 @@ class Item:
             'owned': self.owned
         }
 
+    def __repr__(self):
+        return self.name
+
     def __init__(self):
         self.id = uuid.uuid1()
 
@@ -64,6 +67,12 @@ class NodeDetail:
         detail = NodeDetail(node)
         detail.title = data.get('title', '')
         detail.text = data.get('text', '')
-        detail.items = data.get('items', [])
-        detail.required_items = data.get('required_items', [])
+        items = data.get('items', [])
+        detail.items = []
+        for item in items:
+            detail.items.append(Item.FromJson(item))
+        required_items = data.get('required_items', [])
+        detail.required_items = []
+        for item in required_items:
+            detail.required_items.append(Item.FromJson(item))
         return detail

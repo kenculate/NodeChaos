@@ -184,12 +184,12 @@ class Connection:
         self.path_item.setPath(self.path)
 
     def update_path(self, scene):
-        self.path.setElementPositionAt(0, self.source.mapToScene(self.source.rect().center()).x(),
-                                         self.source.mapToScene(self.source.rect().center()).y())
-        self.path.setElementPositionAt(1, self.source.mapToScene(self.source.rect().center()).x() + 50,
-            self.source.mapToScene(self.source.rect().center()).y())
-        self.path.setElementPositionAt(2, self.destination.mapToScene(self.destination.rect().center()).x() - 50,
-            self.destination.mapToScene(self.destination.rect().center()).y())
-        self.path.setElementPositionAt(3, self.destination.mapToScene(self.destination.rect().center()).x(),
-            self.destination.mapToScene(self.destination.rect().center()).y())
+        src = self.source.mapToScene(self.source.rect().center())
+        dest = self.destination.mapToScene(self.destination.rect().center())
+        self.path.setElementPositionAt(0, src.x(), src.y())
+        y = 0 if src.x() < dest.x() else -((abs(dest.y()-src.y())/10)+250)
+        x = 50 if src.x() < dest.x() else ((abs(dest.x()-src.x())/10)+250)
+        self.path.setElementPositionAt(1, src.x() + x, src.y()+y)
+        self.path.setElementPositionAt(2, dest.x() - x, dest.y()+y)
+        self.path.setElementPositionAt(3, dest.x(), dest.y())
         self.path_item.setPath(self.path)

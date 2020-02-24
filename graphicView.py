@@ -41,8 +41,8 @@ class ChaosGraphicView(QGraphicsView):
         self.setResizeAnchor(QGraphicsView.AnchorUnderMouse)
         self.setDragMode(QGraphicsView.RubberBandDrag)
         self.setTransformationAnchor(QGraphicsView.AnchorUnderMouse)
-        self.item_editor = ItemEditor(self)
-        self.item_editor.hide()
+        # self.item_editor = ItemEditor(self)
+        # self.item_editor.hide()
         self.node_editor = nodeDetailEditor.NodeDetailEditor(None, self)
         self.node_editor.hide()
 
@@ -73,7 +73,6 @@ class ChaosGraphicView(QGraphicsView):
             if len(self.nodes) == 0:return
             item_rect = self.nodes[0].rect()
             for item in self.nodes:
-                print(item.rect().topLeft(), item.rect().bottomRight())
                 if item.rect().top() < item_rect.top():
                     item_rect.setTop(item.rect().top())
                 if item.rect().left() < item_rect.left():
@@ -86,8 +85,8 @@ class ChaosGraphicView(QGraphicsView):
             self.centerOn(item_rect.center())
             self.scale(1/self.__current_zoom, 1/self.__current_zoom)
             self.__current_zoom = self.transform().m11()
-        elif event.key() == Qt.Key_I:
-            self.item_editor.show()
+        # elif event.key() == Qt.Key_I:
+        #     self.item_editor.show()
         super(ChaosGraphicView, self).keyPressEvent(event)
 
     def wheelEvent(self, event:QWheelEvent):
@@ -96,7 +95,6 @@ class ChaosGraphicView(QGraphicsView):
         self.setTransformationAnchor(QGraphicsView.AnchorUnderMouse)
 
         zoom = _ZOOM_STEP if event.delta() >= 0 else 1.0/_ZOOM_STEP
-        print(event.delta(), self.geometry().width() / self.scene.sceneRect().width())
         rect = self.scene.sceneRect()
         rect.setLeft(rect.left() + (rect.width() * 0.1 * math.copysign(1, event.delta())))
         rect.setRight(rect.right() + (rect.width() * -0.1 * math.copysign(1, event.delta())))

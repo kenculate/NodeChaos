@@ -31,8 +31,9 @@ class NodeChaosEditor(Ui_MainWindow, QMainWindow):
         from nodeData import Item
         self.graph_view.node_data.nodes.clear()
         for item in self.graph_view.scene.items():
-            self.graph_view.scene.removeItem(item)
-            del item
+            if item != self.graph_view.path:
+                self.graph_view.scene.removeItem(item)
+                del item
         file_name, result = QFileDialog.getOpenFileName()
         if result:
             file = open(file_name, 'r')
@@ -41,7 +42,7 @@ class NodeChaosEditor(Ui_MainWindow, QMainWindow):
             items = data.get('items', [])
             for item in items:
                 self.graph_view.node_data.items.append(Item.FromJson(item))
-            self.graph_view.item_editor.load(self.graph_view.node_data.items)
+            self.item_editor.load(self.graph_view.node_data.items)
 
             # nodes
             nodes = data.get('nodes', [])
