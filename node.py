@@ -62,7 +62,7 @@ class Node(QGraphicsItem):
         self.knobs: [Knob] = []
         self.knobs.append(Knob(self, KnobType.Input))
         self.knobs.append(Knob(self, KnobType.Output))
-        self.connections : [Connection] = []
+        self.connections: [Connection] = []
         self.default_gradient = QLinearGradient(QPointF(0, 0), QPointF(0, self.size.y))
         self.default_gradient.setColorAt(0, Qt.gray)
         self.default_gradient.setColorAt(30.0 / self.size.y, Qt.darkGray)
@@ -75,9 +75,16 @@ class Node(QGraphicsItem):
         self.selected_gradient.setColorAt(30.1 / self.size.y, Qt.white)
         self.selected_gradient.setColorAt(1, Qt.gray)
 
+    def delete(self):
+        self.scene().removeItem(self)
+        del self
+
     def add_connection(self, scene, source_knob, destination_knob):
         self.connections.append(Connection(source_knob, destination_knob))
         scene.addItem(self.connections[-1].path_item)
+
+    def remove_connection(self, connection):
+        self.connections.remove(connection)
 
     def rect(self):
         return QRect(self.position.x, self.position.y, self.size.x, self.size.y)
@@ -91,6 +98,13 @@ class Node(QGraphicsItem):
     def paint(self, painter:QPainter, option, widget):
         self.position.setxy(self.pos().x(), self.pos().y())
         if self.isSelected():
+            pen = painter.pen()
+            brush = painter.brush()
+            painter.setBrush(Qt.white)
+            painter.setPen(QPen(Qt.white, 5))
+            painter.drawRoundedRect(self.scale_rect(self.boundingRect(), (_KNOB_SIZE / 2)-2, -2), 10, 10)
+            painter.setPen(pen)
+            painter.setBrush(brush)
             painter.setBrush(QBrush(self.selected_gradient))
         else:
             painter.setBrush(QBrush(self.default_gradient))
@@ -153,6 +167,20 @@ class Knob(QGraphicsRectItem):
         return super(Knob, self).itemChange(change, value)
 
 
+class Edge(QGraphicsPathItem):
+    def __init__(self, connection, node):
+        super(Edge, self).__init__()
+        self.node = node
+        self.connection = connection
+
+    def delete(self):
+        self.scene().removeItem(self)
+        self.node.remove_connection(self.connection)
+        del self
+
+    def rect(self):
+        return self.boundingRect()
+
 class Connection:
     @staticmethod
     def FromJson(source, destination):
@@ -168,7 +196,8 @@ class Connection:
     def __init__(self, source: Knob, destination: Knob):
         self.source = source
         self.destination = destination
-        self.path_item = QGraphicsPathItem()
+        self.path_item = Edge(self, source.node)
+        self.path_item.setFlag(QGraphicsItem.ItemIsSelectable)
         self.path_item.setZValue(-1)
         self.path_item.setPen(QPen(QColor(66, 135, 245), 15))
         self.path = QPainterPath()
@@ -193,3 +222,7 @@ class Connection:
         self.path.setElementPositionAt(2, dest.x() - x, dest.y()+y)
         self.path.setElementPositionAt(3, dest.x(), dest.y())
         self.path_item.setPath(self.path)
+        if self.path_item.isSelected():
+            self.path_item.setPen(QPen(QColor(255, 255, 255), 20))
+        else:
+            self.path_item.setPen(QPen(QColor(66, 135, 245), 15))

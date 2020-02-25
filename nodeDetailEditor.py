@@ -97,19 +97,19 @@ class NodeDetailEditor(QDialog):
             row_item = self.item_model.itemFromIndex(index)
             if row_item.checkState() == Qt.Checked:
                 if row_item.data(Qt.UserRole) not in self.node.detail.items:
-                    self.node.detail.items.append(row_item.data(Qt.UserRole))
+                    self.node.detail.add_item(row_item.data(Qt.UserRole))
             else:
                 if row_item.data(Qt.UserRole) in self.node.detail.items:
-                    self.node.detail.items.remove(row_item.data(Qt.UserRole))
+                    self.node.detail.remove_item(row_item.data(Qt.UserRole))
         for row in range(self.required_item_model.rowCount()):
             index = self.required_item_model.index(row, 0)
             row_item = self.required_item_model.itemFromIndex(index)
             if row_item.checkState() == Qt.Checked:
                 if row_item.data(Qt.UserRole) not in self.node.detail.required_items:
-                    self.node.detail.required_items.append(row_item.data(Qt.UserRole))
+                    self.node.detail.add_required_item(row_item.data(Qt.UserRole))
             else:
                 if row_item.data(Qt.UserRole) in self.node.detail.required_items:
-                    self.node.detail.required_items.remove(row_item.data(Qt.UserRole))
+                    self.node.detail.remove_required_item(row_item.data(Qt.UserRole))
 
 
         self.close()

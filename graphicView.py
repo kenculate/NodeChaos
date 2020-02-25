@@ -15,6 +15,7 @@ _ZOOM_STEP = 1.1
 class ChaosGraphicView(QGraphicsView):
     def __init__(self, parent):
         super(ChaosGraphicView, self).__init__(parent)
+        self.node_chaos_editor = parent
         self.scene = ChaosGraphicScene()
         self.nodes = []
         self.node_data = NodeData()
@@ -49,6 +50,9 @@ class ChaosGraphicView(QGraphicsView):
     # def resizeEvent(self, event:QResizeEvent):
     #     self.scene.setSceneRect(self.geometry())
 
+    def get_item_editor(self):
+        return self.node_chaos_editor.item_editor
+
     def add_node(self, node):
         self.nodes.append(node)
         self.scene.addItem(node)
@@ -70,9 +74,31 @@ class ChaosGraphicView(QGraphicsView):
             )
             self.add_node(self.node_data.nodes[-1])
         elif event.key() == Qt.Key_F:
-            if len(self.nodes) == 0:return
-            item_rect = self.nodes[0].rect()
-            for item in self.nodes:
+            self.frame_selected()
+        elif event.key() == Qt.Key_Delete:
+            self.delete_selected()
+        # elif event.key() == Qt.Key_I:
+        #     self.item_editor.show()
+        super(ChaosGraphicView, self).keyPressEvent(event)
+
+    def delete_selected(self):
+        items = self.scene.selectedItems()
+        if not items: return
+        for item in items:
+            if type(item) == Node:
+                self.nodes.remove(item)
+                self.node_data.nodes.remove(item)
+                item.delete()
+            elif type(item) == Edge:
+                item.delete()
+
+    def frame_selected(self, nodes=[], zoom=True):
+        if len(self.nodes) == 0: return
+        if not nodes:
+            nodes = self.nodes
+        item_rect = nodes[0].rect()
+        for item in nodes:
+            if type(item) == Node:
                 if item.rect().top() < item_rect.top():
                     item_rect.setTop(item.rect().top())
                 if item.rect().left() < item_rect.left():
@@ -81,13 +107,11 @@ class ChaosGraphicView(QGraphicsView):
                     item_rect.setBottom(item.rect().bottom())
                 if item.rect().right() > item_rect.right():
                     item_rect.setRight(item.rect().right())
-            self.setTransformationAnchor(QGraphicsView.AnchorViewCenter)
-            self.centerOn(item_rect.center())
-            self.scale(1/self.__current_zoom, 1/self.__current_zoom)
+        self.setTransformationAnchor(QGraphicsView.AnchorViewCenter)
+        self.centerOn(item_rect.center())
+        if zoom:
+            self.scale(1 / self.__current_zoom, 1 / self.__current_zoom)
             self.__current_zoom = self.transform().m11()
-        # elif event.key() == Qt.Key_I:
-        #     self.item_editor.show()
-        super(ChaosGraphicView, self).keyPressEvent(event)
 
     def wheelEvent(self, event:QWheelEvent):
         if event.delta() < 0 and self.__current_zoom < 0.05:
@@ -119,17 +143,28 @@ class ChaosGraphicView(QGraphicsView):
                     if item == self.selected_knob:
                         self.toggle_connection(False)
                     else:
-                        self.selected_knob.node.add_connection(self.scene, self.selected_knob, item)
-                        self.toggle_connection(False)
+                        self.add_connection(item)
                 else:
                     self.selected_knob = item
                     self.toggle_connection(True)
                     self.draw_current_edge(event.pos())
+            elif type(item) == Edge:
+                item.highlighted = True
             else:
                 self.toggle_connection(False)
         else:
             self.toggle_connection(False)
         super(ChaosGraphicView, self).mousePressEvent(event)
+
+    def add_connection(self, item):
+        if self.selected_knob.knob_type == item.knob_type:
+            self.toggle_connection(False)
+            return
+        if self.selected_knob.knob_type == KnobType.Output and item.knob_type == KnobType.Input:
+            self.selected_knob.node.add_connection(self.scene, item, self.selected_knob)
+        else:
+            self.selected_knob.node.add_connection(self.scene, self.selected_knob, item)
+        self.toggle_connection(False)
 
     def toggle_connection(self, toggle):
         if not toggle:

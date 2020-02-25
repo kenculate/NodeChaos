@@ -1,6 +1,7 @@
 from lib import *
 import uuid
 
+
 class NodeData:
     def __init__(self):
         from node import Node
@@ -14,6 +15,19 @@ class NodeData:
             'nodes': self.nodes,
             'items': self.items
         }
+
+    def add_item(self, item):
+        self.items.append(item)
+
+    def add_node(self, node):
+        self.nodes.append(node)
+    def get_node(self, id):
+        node = [n for n in self.nodes if n.id == id]
+        if node:
+            return node[0]
+
+    def clear_nodes(self):
+        self.nodes.clear()
 
 
 class Item:
@@ -76,3 +90,15 @@ class NodeDetail:
         for item in required_items:
             detail.required_items.append(Item.FromJson(item))
         return detail
+
+    def add_required_item(self, item):
+        self.required_items.append(item)
+
+    def remove_required_item(self, item):
+        self.required_items.remove(item)
+
+    def add_item(self, item):
+        self.items.append(item)
+
+    def remove_item(self, item):
+        self.items.remove(item)

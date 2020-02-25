@@ -32,6 +32,7 @@ class ItemEditor(QWidget):
         for item in items:
             row = QStandardItem(item.name)
             row.setCheckable(True)
+            row.setData(item, Qt.UserRole)
             self.model.insertRow(self.model.rowCount(), row)
         self.list_view.repaint()
 
@@ -43,4 +44,15 @@ class ItemEditor(QWidget):
             self.model.appendRow(row)
             item = Item()
             item.name = text
-            self.graph_view.node_data.items.append(item)
+            self.graph_view.node_data.add_item(item)
+
+    def found_item(self, item):
+        for row in range(self.model.rowCount()):
+            row_item = self.model.itemFromIndex(self.model.index(row, 0))
+            if row_item.data(Qt.UserRole).id == item.id:
+                row_item.setCheckState(Qt.Checked)
+
+    def reset_items(self):
+        for row in range(self.model.rowCount()):
+            row_item = self.model.itemFromIndex(self.model.index(row, 0))
+            row_item.setCheckState(Qt.Unchecked)
