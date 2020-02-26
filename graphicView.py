@@ -4,10 +4,10 @@ from PySide2.QtGui import *
 from lib import *
 from graphicScene import ChaosGraphicScene
 from node import *
-from nodeData import *
-from itemEditor import ItemEditor
+from data import *
+from inventoryEditor import InventoryEditor
 import math
-import nodeDetailEditor
+import detailEditor
 
 _ZOOM_STEP = 1.1
 
@@ -18,7 +18,7 @@ class ChaosGraphicView(QGraphicsView):
         self.node_chaos_editor = parent
         self.scene = ChaosGraphicScene()
         self.nodes = []
-        self.node_data = NodeData()
+        self.node_data = Data()
         self.scene.setSceneRect(0, 0, 99999, 99999)
         self.setScene(self.scene)
         # self.setFixedSize(900, 700)
@@ -44,7 +44,7 @@ class ChaosGraphicView(QGraphicsView):
         self.setTransformationAnchor(QGraphicsView.AnchorUnderMouse)
         # self.item_editor = ItemEditor(self)
         # self.item_editor.hide()
-        self.node_editor = nodeDetailEditor.NodeDetailEditor(None, self)
+        self.node_editor = detailEditor.DetailEditor(None, self)
         self.node_editor.hide()
 
     # def resizeEvent(self, event:QResizeEvent):

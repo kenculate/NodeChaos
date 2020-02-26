@@ -1,12 +1,12 @@
 from PySide2.QtWidgets import *
 from PySide2.QtGui import *
 from PySide2.QtCore import *
-from nodeData import Item
+from data import Item
 
 
-class ItemEditor(QWidget):
+class InventoryEditor(QWidget):
     def __init__(self, parent):
-        super(ItemEditor, self).__init__(parent=parent)
+        super(InventoryEditor, self).__init__(parent=parent)
         self.resize(QSize(400, 400))
 
         self.setStyleSheet('''

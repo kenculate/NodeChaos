@@ -1,7 +1,7 @@
 from PySide2.QtWidgets import *
 from PySide2.QtGui import *
 from PySide2.QtCore import *
-from nodeData import Item
+from data import Item
 
 
 class NodeChaosPlayer(QWidget):
@@ -41,16 +41,17 @@ class NodeChaosPlayer(QWidget):
         for connection in node.connections:
             next_node = self.graph_view.node_data.get_node(connection.destination.node.id)
             if next_node:
-                title = next_node.detail.title
-                row = QStandardItem(title)
-                found_items = self.has_required_item(next_node.detail.required_items, self.items)
-                if not len(found_items):
-                    title = f'(LOCKED){next_node.detail.title}'
-                    row.setText(title)
-                    row.setForeground(QBrush(Qt.red))
-                row.setData(next_node, Qt.UserRole)
-                self.model.appendRow(row)
-            connection.path_item.setSelected(True)
+                if connection.path_item:
+                    title = next_node.detail.title
+                    row = QStandardItem(title)
+                    found_items = self.has_required_item(next_node.detail.required_items, self.items)
+                    if not len(found_items):
+                        title = f'(LOCKED){next_node.detail.title}'
+                        row.setText(title)
+                        row.setForeground(QBrush(Qt.red))
+                    row.setData(next_node, Qt.UserRole)
+                    self.model.appendRow(row)
+                    connection.path_item.setSelected(True)
         self.graph_view.frame_selected(self.graph_view.scene.selectedItems())
 
     def has_required_item(self, require_items, items):
@@ -61,8 +62,8 @@ class NodeChaosPlayer(QWidget):
     def clear(self):
         self.current_node.setSelected(False)
         for connection in self.current_node.connections:
-            connection.path_item.setSelected(False)
-
+            if connection.path_item:
+                connection.path_item.setSelected(False)
 
     def item_clicked(self, index):
         item = self.model.itemFromIndex(index)

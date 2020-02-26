@@ -2,7 +2,7 @@ from PySide2.QtWidgets import *
 from graphicView import ChaosGraphicView
 from node import Node
 import json
-from itemEditor import ItemEditor
+from inventoryEditor import InventoryEditor
 from nodeChaosEditor_UI import Ui_MainWindow
 from nodeChaosPlayer import NodeChaosPlayer
 
@@ -12,7 +12,7 @@ class NodeChaosEditor(Ui_MainWindow, QMainWindow):
         super(NodeChaosEditor, self).__init__()
         self.setupUi(self)
         self.graph_view = ChaosGraphicView(parent=self)
-        self.item_editor = ItemEditor(parent=self.graph_view)
+        self.item_editor = InventoryEditor(parent=self.graph_view)
         self.player = NodeChaosPlayer(self.graph_view)
         self.player.setFixedWidth(0)
         self.horizontalLayout.insertWidget(0, self.graph_view)
@@ -38,7 +38,7 @@ class NodeChaosEditor(Ui_MainWindow, QMainWindow):
             file.close()
 
     def load(self):
-        from nodeData import Item
+        from data import Item
         self.graph_view.node_data.clear_nodes()
         for item in self.graph_view.scene.items():
             if item != self.graph_view.path:

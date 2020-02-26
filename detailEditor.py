@@ -3,10 +3,10 @@ from PySide2.QtCore import *
 from PySide2.QtGui import *
 
 
-class NodeDetailEditor(QDialog):
+class DetailEditor(QDialog):
     def __init__(self, node, parent):
         self.graph_view = parent
-        super(NodeDetailEditor, self).__init__(parent=parent)
+        super(DetailEditor, self).__init__(parent=parent)
         self.resize(QSize(800, 400))
         self.setStyleSheet('''
         QWidget{

@@ -5,7 +5,7 @@ from lib import *
 from enum import Enum
 import random
 import uuid
-from nodeData import NodeDetail
+from data import NodeDetail
 
 _KNOB_OFFSET = 40
 _KNOB_SIZE = 20

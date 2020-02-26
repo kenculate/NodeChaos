@@ -2,7 +2,7 @@ from lib import *
 import uuid
 
 
-class NodeData:
+class Data:
     def __init__(self):
         from node import Node
         self.nodes: [Node] = []
@@ -21,6 +21,7 @@ class NodeData:
 
     def add_node(self, node):
         self.nodes.append(node)
+
     def get_node(self, id):
         node = [n for n in self.nodes if n.id == id]
         if node:
