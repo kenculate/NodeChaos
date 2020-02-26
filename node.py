@@ -80,7 +80,8 @@ class Node(QGraphicsItem):
         del self
 
     def add_connection(self, scene, source_knob, destination_knob):
-        self.connections.append(Connection(source_knob, destination_knob))
+        destination_knob.node.connections.append(Connection(destination_knob, source_knob, False))
+        self.connections.append(Connection(source_knob, destination_knob, True))
         scene.addItem(self.connections[-1].path_item)
 
     def remove_connection(self, connection):
@@ -121,7 +122,7 @@ class Node(QGraphicsItem):
             painter.setPen(Qt.black)
             painter.drawText(self.scale_rect(self.boundingRect(), _KNOB_SIZE, 50), self.detail.text)
         for connection in self.connections:
-            connection.update_path(self.scene())
+            connection.update_path()
 
 
 class Knob(QGraphicsRectItem):
@@ -151,13 +152,11 @@ class Knob(QGraphicsRectItem):
         self.knob_type = knob_type
         self.index = len([n for n in node.knobs if n.knob_type == knob_type]) + 1
         if knob_type == KnobType.Input:
-            # self.setBrush(QColor(50, 200, 200))
             self.setBrush(QColor(44, 78, 133))
             self.setRect(node.boundingRect().width() - _KNOB_SIZE,
                          self.index * _KNOB_OFFSET,
                          _KNOB_SIZE, _KNOB_SIZE)
         else:
-            # self.setBrush(QColor(50, 100, 100))
             self.setBrush(QColor(147, 175, 219))
             self.setRect(0,
                          self.index * _KNOB_OFFSET,
@@ -175,11 +174,16 @@ class Edge(QGraphicsPathItem):
 
     def delete(self):
         self.scene().removeItem(self)
-        self.node.remove_connection(self.connection)
+        other_connection = self.connection.destination_connection()
+        if other_connection:
+            other_connection.delete()
+        self.connection.delete()
+        # self.node.remove_connection(self.connection)
         del self
 
     def rect(self):
         return self.boundingRect()
+
 
 class Connection:
     @staticmethod
@@ -193,36 +197,47 @@ class Connection:
             'destination': self.destination
         }
 
-    def __init__(self, source: Knob, destination: Knob):
+    def __init__(self, source: Knob, destination: Knob, has_path):
         self.source = source
         self.destination = destination
-        self.path_item = Edge(self, source.node)
-        self.path_item.setFlag(QGraphicsItem.ItemIsSelectable)
-        self.path_item.setZValue(-1)
-        self.path_item.setPen(QPen(QColor(66, 135, 245), 15))
-        self.path = QPainterPath()
-        self.path.moveTo(source.rect().center())
-        self.path.cubicTo(
-            source.rect().center().x() + 50,
-            source.rect().center().y(),
-            destination.rect().center().x() - 50,
-            destination.rect().center().y(),
-            destination.rect().center().x(),
-            destination.rect().center().y()
-        )
-        self.path_item.setPath(self.path)
-
-    def update_path(self, scene):
-        src = self.source.mapToScene(self.source.rect().center())
-        dest = self.destination.mapToScene(self.destination.rect().center())
-        self.path.setElementPositionAt(0, src.x(), src.y())
-        y = 0 if src.x() < dest.x() else -((abs(dest.y()-src.y())/10)+250)
-        x = 50 if src.x() < dest.x() else ((abs(dest.x()-src.x())/10)+250)
-        self.path.setElementPositionAt(1, src.x() + x, src.y()+y)
-        self.path.setElementPositionAt(2, dest.x() - x, dest.y()+y)
-        self.path.setElementPositionAt(3, dest.x(), dest.y())
-        self.path_item.setPath(self.path)
-        if self.path_item.isSelected():
-            self.path_item.setPen(QPen(QColor(255, 255, 255), 20))
-        else:
+        self.path_item = None
+        if has_path:
+            self.path_item = Edge(self, source.node)
+            self.path_item.setFlag(QGraphicsItem.ItemIsSelectable)
+            self.path_item.setZValue(-1)
             self.path_item.setPen(QPen(QColor(66, 135, 245), 15))
+            self.path = QPainterPath()
+            self.path.moveTo(source.rect().center())
+            self.path.cubicTo(
+                source.rect().center().x() + 50,
+                source.rect().center().y(),
+                destination.rect().center().x() - 50,
+                destination.rect().center().y(),
+                destination.rect().center().x(),
+                destination.rect().center().y()
+            )
+            self.path_item.setPath(self.path)
+
+    def destination_connection(self):
+        connection = [c for c in self.destination.node.connections if c.destination == self.source]
+        if connection:
+            return connection[0]
+
+    def update_path(self):
+        if self.path_item:
+            src = self.source.mapToScene(self.source.rect().center())
+            dest = self.destination.mapToScene(self.destination.rect().center())
+            self.path.setElementPositionAt(0, src.x(), src.y())
+            y = 0 if src.x() < dest.x() else -((abs(dest.y()-src.y())/10)+250)
+            x = 50 if src.x() < dest.x() else ((abs(dest.x()-src.x())/10)+250)
+            self.path.setElementPositionAt(1, src.x() + x, src.y()+y)
+            self.path.setElementPositionAt(2, dest.x() - x, dest.y()+y)
+            self.path.setElementPositionAt(3, dest.x(), dest.y())
+            self.path_item.setPath(self.path)
+            if self.path_item.isSelected():
+                self.path_item.setPen(QPen(QColor(255, 255, 255), 20))
+            else:
+                self.path_item.setPen(QPen(QColor(66, 135, 245), 15))
+
+    def delete(self):
+        self.source.node.remove_connection(self)
