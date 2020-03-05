@@ -1,6 +1,6 @@
 from PySide2.QtWidgets import *
 from graphicView import ChaosGraphicView
-from node import Node
+from node import Node, Connection, KnobType
 import json
 from inventoryEditor import InventoryEditor
 from nodeChaosEditor_UI import Ui_MainWindow
@@ -11,6 +11,7 @@ class NodeChaosEditor(Ui_MainWindow, QMainWindow):
     def __init__(self):
         super(NodeChaosEditor, self).__init__()
         self.setupUi(self)
+        self.setWindowTitle('Node Chaos')
         self.graph_view = ChaosGraphicView(parent=self)
         self.item_editor = InventoryEditor(parent=self.graph_view)
         self.player = NodeChaosPlayer(self.graph_view)
@@ -53,7 +54,6 @@ class NodeChaosEditor(Ui_MainWindow, QMainWindow):
             for item in items:
                 self.graph_view.node_data.add_item(Item.FromJson(item))
             self.item_editor.load(self.graph_view.node_data.items)
-
             # nodes
             nodes = data.get('nodes', [])
             for n in nodes:
@@ -61,14 +61,12 @@ class NodeChaosEditor(Ui_MainWindow, QMainWindow):
                 self.graph_view.node_data.add_node(node)
                 self.graph_view.add_node(node)
             for node in nodes:
-                for connection in node.get('connections', []):
-                    _node = [n for n in self.graph_view.node_data.nodes if n.id == node['id']]
-                    if _node:
-                        _node = _node[0]
-                        _source_knob = [kn for kn in _node.knobs if kn.id == connection['source']['id']]
-                        _destination_node = [n for n in self.graph_view.node_data.nodes if n.id == connection['destination']['node']]
-                        _destination_knob = [kn for kn in _destination_node[0].knobs if kn.id == connection['destination']['id']]
-                        _node.add_connection(self.graph_view.scene, _source_knob[0], _destination_knob[0])
+                source_node = [
+                    n for n in self.graph_view.node_data.nodes
+                    if n.id == node.get('id', 0)
+                ]
+                source_node[0].setup_connection(node, self.graph_view.node_data.nodes, self.graph_view.scene)
+
 
     def setup_scene(self):
         pass

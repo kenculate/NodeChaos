@@ -39,18 +39,20 @@ class InventoryEditor(QWidget):
     def add_item(self):
         text, result = QInputDialog.getText(self, 'adding item', 'enter item name to add')
         if result:
-            row = QStandardItem(text)
-            row.setCheckable(True)
-            self.model.appendRow(row)
             item = Item()
             item.name = text
             self.graph_view.node_data.add_item(item)
+            row = QStandardItem(text)
+            row.setCheckable(True)
+            row.setData(item, Qt.UserRole)
+            self.model.appendRow(row)
 
     def found_item(self, item):
         for row in range(self.model.rowCount()):
             row_item = self.model.itemFromIndex(self.model.index(row, 0))
-            if row_item.data(Qt.UserRole).id == item.id:
-                row_item.setCheckState(Qt.Checked)
+            if row_item:
+                if row_item.data(Qt.UserRole).id == item.id:
+                    row_item.setCheckState(Qt.Checked)
 
     def reset_items(self):
         for row in range(self.model.rowCount()):

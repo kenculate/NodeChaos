@@ -24,7 +24,7 @@ class Node(QGraphicsItem):
 
     @staticmethod
     def FromJson(data):
-        name = data.get('data', '')
+        name = data.get('name', '')
         position = V2d.FromJson(data.get('position', V2d()))
         node = Node(position, name=name)
         node.id = data.get('id', 0)
@@ -49,10 +49,10 @@ class Node(QGraphicsItem):
         super(Node, self).__init__()
         self.id = uuid.uuid1()
         self.setPos(position.pointf())
-        self.detail = NodeDetail(self)
         self.name = name
         self.position = position
         self.size = size
+        self.detail = NodeDetail(self)
         self.setFlag(QGraphicsItem.ItemIsSelectable)
         self.setFlag(QGraphicsItem.ItemIsMovable)
         self.setAcceptDrops(True)
@@ -78,6 +78,23 @@ class Node(QGraphicsItem):
     def delete(self):
         self.scene().removeItem(self)
         del self
+
+    def setup_connection(self, node, nodes, scene):
+        for connection in node.get('connections', []):
+            source_knob = [
+                kn for kn in self.knobs
+                if kn.id == connection.get('source', {}).get('id', 0)
+            ]
+            if connection.get('source', {}).get('knob_type', 0) == 1:
+                destination_node = [
+                    n for n in nodes
+                    if n.id == connection.get('destination', {}).get('node', None)
+                ]
+                destination_knob = [
+                    kn for kn in destination_node[0].knobs
+                    if kn.id == connection.get('destination', {}).get('id', 0)
+                ]
+                self.add_connection(scene, source_knob[0], destination_knob[0])
 
     def add_connection(self, scene, source_knob, destination_knob):
         destination_knob.node.connections.append(Connection(destination_knob, source_knob, False))
@@ -127,9 +144,10 @@ class Node(QGraphicsItem):
 
 class Knob(QGraphicsRectItem):
     @staticmethod
-    def FromJson(node, knob_type, data):
-        knob = Knob(node, knob_type)
+    def FromJson(node, data):
+        knob = Knob(node)
         knob.id = data.get('id', 0)
+        knob.index = data.get('index', 0)
         knob.knob_type = data.get('knob_type', KnobType.Input)
         return knob
 
@@ -187,8 +205,10 @@ class Edge(QGraphicsPathItem):
 
 class Connection:
     @staticmethod
-    def FromJson(source, destination):
-        connection = Connection(source, destination)
+    def FromJson(source_node, destination_node, data):
+        source = Knob.FromJson(source_node, data.get('source', {}))
+        destination = Knob.FromJson(destination_node, data.get('destination', {}))
+        connection = Connection(source, destination, source.knob_type == KnobType.Input)
         return connection
 
     def json(self):
