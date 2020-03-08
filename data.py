@@ -7,8 +7,6 @@ class Data:
         from node import Node
         self.nodes: [Node] = []
         self.items: [Item] = []
-        # self.nodes.append(ChaosNode(V2d(100, 100), name='Node1'))
-        # self.nodes.append(ChaosNode(V2d(350, 100), name='Node2'))
 
     def json(self):
         return {
@@ -63,7 +61,7 @@ class Item:
 class NodeDetail:
     def __init__(self, node):
         self.node = node
-        self.title = ''
+        self.title = f'{node.name}_{str(node.id)[0:5]}'
         self.text = ''
         self.items: [Item] = []
         self.required_items: [Item] = []
