@@ -47,7 +47,7 @@ class NodeChaosEditor(Ui_MainWindow, QMainWindow):
                 del item
         file_name, result = QFileDialog.getOpenFileName()
         if result:
-            file = open(file_name, 'r')
+            file = open(file_name, 'r', encoding='utf-8')
             data = json.load(file)
             # items
             items = data.get('items', [])

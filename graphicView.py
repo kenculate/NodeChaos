@@ -21,8 +21,6 @@ class ChaosGraphicView(QGraphicsView):
         self.node_data = Data()
         self.scene.setSceneRect(0, 0, 99999, 99999)
         self.setScene(self.scene)
-        # self.setFixedSize(900, 700)
-        # self.scene.setSceneRect(self.geometry())
 
         self.path = QGraphicsPathItem()
         self.path.setFlag(QGraphicsItem.ItemIsSelectable, False)
@@ -46,9 +44,6 @@ class ChaosGraphicView(QGraphicsView):
         # self.item_editor.hide()
         self.node_editor = detailEditor.DetailEditor(None, self)
         self.node_editor.hide()
-
-    # def resizeEvent(self, event:QResizeEvent):
-    #     self.scene.setSceneRect(self.geometry())
 
     def get_item_editor(self):
         return self.node_chaos_editor.item_editor
@@ -77,8 +72,6 @@ class ChaosGraphicView(QGraphicsView):
             self.frame_selected()
         elif event.key() == Qt.Key_Delete:
             self.delete_selected()
-        # elif event.key() == Qt.Key_I:
-        #     self.item_editor.show()
         super(ChaosGraphicView, self).keyPressEvent(event)
 
     def delete_selected(self):

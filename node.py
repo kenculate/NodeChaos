@@ -25,7 +25,7 @@ class Node(QGraphicsItem):
     @staticmethod
     def FromJson(data):
         name = data.get('name', '')
-        position = V2d.FromJson(data.get('position', V2d()))
+        position = V2d.FromJson(data.get('position', {}))
         node = Node(position, name=name)
         node.id = data.get('id', 0)
         detail = NodeDetail.FromJson(node, data.get('detail', {}))
@@ -196,7 +196,6 @@ class Edge(QGraphicsPathItem):
         if other_connection:
             other_connection.delete()
         self.connection.delete()
-        # self.node.remove_connection(self.connection)
         del self
 
     def rect(self):

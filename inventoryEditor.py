@@ -22,10 +22,7 @@ class InventoryEditor(QWidget):
         self.pb_add.clicked.connect(self.add_item)
         self.layout.addWidget(self.pb_add)
         self.layout.addWidget(self.list_view)
-        # self.pb_close = QPushButton('close')
-        # self.layout.addWidget(self.pb_close)
         self.model = QStandardItemModel()
-        # self.pb_close.clicked.connect(self.close)
         self.list_view.setModel(self.model)
 
     def load(self, items):
