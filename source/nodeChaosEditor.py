@@ -1,10 +1,11 @@
 from PySide2.QtWidgets import *
-from graphicView import ChaosGraphicView
-from node import Node, Connection, KnobType
+from source.graphicView import ChaosGraphicView
+from source.node import Node
 import json
-from inventoryEditor import InventoryEditor
-from nodeChaosEditor_UI import Ui_MainWindow
-from nodeChaosPlayer import NodeChaosPlayer
+from source.inventoryEditor import InventoryEditor
+from ui.nodeChaosEditor_UI import Ui_MainWindow
+from source.nodeChaosPlayer import NodeChaosPlayer
+from source.data import Data
 
 
 class NodeChaosEditor(Ui_MainWindow, QMainWindow):
@@ -14,7 +15,7 @@ class NodeChaosEditor(Ui_MainWindow, QMainWindow):
         self.setWindowTitle('Node Chaos')
         self.graph_view = ChaosGraphicView(parent=self)
         self.item_editor = InventoryEditor(parent=self.graph_view)
-        self.player = NodeChaosPlayer(self.graph_view)
+        self.player = NodeChaosPlayer(self.graph_view, self.item_editor)
         self.player.setFixedWidth(0)
         self.horizontalLayout.insertWidget(0, self.graph_view)
         self.horizontalLayout.addWidget(self.item_editor)
@@ -28,19 +29,19 @@ class NodeChaosEditor(Ui_MainWindow, QMainWindow):
 
     def play(self):
         self.player.setFixedWidth(400)
-        self.player.play(self.graph_view.node_data.nodes[0])
+        self.player.play(Data.nodes[0])
 
     def save(self):
-        from lib import to_json
-        file_name, result = QFileDialog.getSaveFileName()
+        from source.lib import to_json
+        file_name, result = QFileDialog.getSaveFileName(filter="*.json", selectedFilter='*.json')
         if result:
             file = open(file_name, 'w')
-            file.write(json.dumps(self.graph_view.node_data, default=to_json, indent=2))
+            file.write(json.dumps(Data, default=to_json, indent=2))
             file.close()
 
     def load(self):
-        from data import Item
-        self.graph_view.node_data.clear_nodes()
+        from source.data import Item
+        Data.clear()
         for item in self.graph_view.scene.items():
             if item != self.graph_view.path:
                 self.graph_view.scene.removeItem(item)
@@ -52,20 +53,19 @@ class NodeChaosEditor(Ui_MainWindow, QMainWindow):
             # items
             items = data.get('items', [])
             for item in items:
-                self.graph_view.node_data.add_item(Item.FromJson(item))
-            self.item_editor.load(self.graph_view.node_data.items)
+                Data.add_item(Item.FromJson(item))
+            self.item_editor.load(Data.items)
             # nodes
             nodes = data.get('nodes', [])
             for n in nodes:
                 node = Node.FromJson(n)
-                self.graph_view.node_data.add_node(node)
                 self.graph_view.add_node(node)
             for node in nodes:
                 source_node = [
-                    n for n in self.graph_view.node_data.nodes
+                    n for n in Data.nodes
                     if n.id == node.get('id', 0)
                 ]
-                source_node[0].setup_connection(node, self.graph_view.node_data.nodes, self.graph_view.scene)
+                source_node[0].setup_connection(node, Data.nodes, self.graph_view.scene)
 
 
     def setup_scene(self):

@@ -1,8 +1,6 @@
 from PySide2.QtWidgets import *
 from PySide2.QtCore import *
 from PySide2.QtGui import *
-from lib import *
-
 
 _GRID_STEP = 2000
 _GRID_SUB_STEP = 200
@@ -11,10 +9,14 @@ _GRID_SUB_STEP = 200
 class ChaosGraphicScene(QGraphicsScene):
 
     def drawBackground(self, painter:QPainter, rect:QRectF):
-        self.painter = painter
         painter.setBrush(QColor(200, 200, 200))
         painter.drawRect(self.sceneRect())
         self.draw_grid(painter)
+        painter.setPen(Qt.black)
+        painter.drawText(rect.left()+20, rect.bottom()-20, 'N to add node, F to frame selection')
+
+    def drawForeground(self, painter, rect):
+        super(ChaosGraphicScene, self).drawForeground(painter, rect)
 
     def draw_grid(self, painter):
         painter.setPen(Qt.black)

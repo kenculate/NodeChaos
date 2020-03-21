@@ -1,13 +1,9 @@
-from PySide2.QtWidgets import *
-from PySide2.QtCore import *
-from PySide2.QtGui import *
-from lib import *
-from graphicScene import ChaosGraphicScene
-from node import *
-from data import *
-from inventoryEditor import InventoryEditor
+from source.graphicScene import ChaosGraphicScene
+from source.node import *
+from source.data import *
+from source.curve import Curve
 import math
-import detailEditor
+from source import detailEditor
 
 _ZOOM_STEP = 1.1
 
@@ -17,8 +13,6 @@ class ChaosGraphicView(QGraphicsView):
         super(ChaosGraphicView, self).__init__(parent)
         self.node_chaos_editor = parent
         self.scene = ChaosGraphicScene()
-        self.nodes = []
-        self.node_data = Data()
         self.scene.setSceneRect(0, 0, 99999, 99999)
         self.setScene(self.scene)
 
@@ -27,7 +21,7 @@ class ChaosGraphicView(QGraphicsView):
         self.path.setPen(QPen(Qt.white, 5))
         self.scene.addItem(self.path)
         self.selected_knob = None
-        for node in self.node_data.nodes:
+        for node in Data.nodes:
             self.add_node(node)
 
         self.__panning = False
@@ -40,16 +34,11 @@ class ChaosGraphicView(QGraphicsView):
         self.setResizeAnchor(QGraphicsView.AnchorUnderMouse)
         self.setDragMode(QGraphicsView.RubberBandDrag)
         self.setTransformationAnchor(QGraphicsView.AnchorUnderMouse)
-        # self.item_editor = ItemEditor(self)
-        # self.item_editor.hide()
         self.node_editor = detailEditor.DetailEditor(None, self)
         self.node_editor.hide()
 
-    def get_item_editor(self):
-        return self.node_chaos_editor.item_editor
-
     def add_node(self, node):
-        self.nodes.append(node)
+        Data.add_node(node)
         self.scene.addItem(node)
         for knob in node.knobs:
             self.scene.addItem(knob)
@@ -63,11 +52,10 @@ class ChaosGraphicView(QGraphicsView):
 
     def keyPressEvent(self, event: QKeyEvent):
         if event.key() == Qt.Key_N:
-            self.node_data.nodes.append(Node(V2d(
+            self.add_node(Node(V2d(
                 self.mapToScene(self.__last_pos).x(),
                 self.mapToScene(self.__last_pos).y()))
             )
-            self.add_node(self.node_data.nodes[-1])
         elif event.key() == Qt.Key_F:
             self.frame_selected()
         elif event.key() == Qt.Key_Delete:
@@ -75,20 +63,20 @@ class ChaosGraphicView(QGraphicsView):
         super(ChaosGraphicView, self).keyPressEvent(event)
 
     def delete_selected(self):
+        # todo: load data delete all add new node, save data again, previous nodes still there
         items = self.scene.selectedItems()
         if not items: return
         for item in items:
             if type(item) == Node:
-                self.nodes.remove(item)
-                self.node_data.nodes.remove(item)
+                Data.remove_node(item)
                 item.delete()
-            elif type(item) == Edge:
+            elif type(item) == Curve:
                 item.delete()
 
     def frame_selected(self, nodes=[], zoom=True):
-        if len(self.nodes) == 0: return
+        if len(Data.nodes) == 0: return
         if not nodes:
-            nodes = self.nodes
+            nodes = Data.nodes
         item_rect = nodes[0].rect()
         for item in nodes:
             if type(item) == Node:
@@ -141,7 +129,7 @@ class ChaosGraphicView(QGraphicsView):
                     self.selected_knob = item
                     self.toggle_connection(True)
                     self.draw_current_edge(event.pos())
-            elif type(item) == Edge:
+            elif type(item) == Curve:
                 item.highlighted = True
             else:
                 self.toggle_connection(False)
@@ -154,9 +142,9 @@ class ChaosGraphicView(QGraphicsView):
             self.toggle_connection(False)
             return
         if self.selected_knob.knob_type == KnobType.Output and item.knob_type == KnobType.Input:
-            self.selected_knob.node.add_connection(self.scene, item, self.selected_knob)
-        else:
             self.selected_knob.node.add_connection(self.scene, self.selected_knob, item)
+        else:
+            item.node.add_connection(self.scene, item, self.selected_knob)
         self.toggle_connection(False)
 
     def toggle_connection(self, toggle):
@@ -214,11 +202,11 @@ class ChaosGraphicView(QGraphicsView):
         pos = self.mapToScene(pos)
         if self.selected_knob:
             maped = self.selected_knob.mapToScene(self.selected_knob.rect().center())
-            t1 = QPointF(50, 0)
-            t2 = QPointF(-50, 0)
+            t1 = QPointF(-50, 0)
+            t2 = QPointF(50, 0)
             if self.selected_knob.knob_type == KnobType.Output:
-                t1 = QPointF(-50, 0)
-                t2 = QPointF(50, 0)
+                t1 = QPointF(50, 0)
+                t2 = QPointF(-50, 0)
             path = QPainterPath()
             path.moveTo(maped)
             path.cubicTo(

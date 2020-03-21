@@ -1,11 +1,11 @@
 from PySide2.QtWidgets import *
 from PySide2.QtCore import *
 from PySide2.QtGui import *
+from source.data import Data
 
 
 class DetailEditor(QDialog):
     def __init__(self, node, parent):
-        self.graph_view = parent
         super(DetailEditor, self).__init__(parent=parent)
         self.resize(QSize(800, 400))
         self.setStyleSheet('''
@@ -68,7 +68,7 @@ class DetailEditor(QDialog):
         self.item_model.clear()
         self.required_item_model.clear()
         # adding acquire items
-        for item in self.parent().node_data.items:
+        for item in Data.items:
             row = QStandardItem(item.name)
             row.setData(item, Qt.UserRole)
             row.setCheckable(True)
@@ -76,7 +76,7 @@ class DetailEditor(QDialog):
                 row.setCheckState(Qt.Checked)
             self.item_model.appendRow(row)
         # adding require items
-        for item in self.parent().node_data.items:
+        for item in Data.items:
             row = QStandardItem(item.name)
             row.setData(item, Qt.UserRole)
             row.setCheckable(True)

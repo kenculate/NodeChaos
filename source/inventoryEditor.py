@@ -1,7 +1,8 @@
 from PySide2.QtWidgets import *
 from PySide2.QtGui import *
 from PySide2.QtCore import *
-from data import Item
+from source.data import Item
+from source.data import Data
 
 
 class InventoryEditor(QWidget):
@@ -15,8 +16,8 @@ class InventoryEditor(QWidget):
                 color:rgb(255, 255, 255);
                 }
                 ''')
-        self.graph_view = parent
         self.layout = QVBoxLayout(self)
+        self.layout.setMargin(0)
         self.list_view = QListView(self)
         self.pb_add = QPushButton('add')
         self.pb_add.clicked.connect(self.add_item)
@@ -38,7 +39,7 @@ class InventoryEditor(QWidget):
         if result:
             item = Item()
             item.name = text
-            self.graph_view.node_data.add_item(item)
+            Data.add_item(item)
             row = QStandardItem(text)
             row.setCheckable(True)
             row.setData(item, Qt.UserRole)

@@ -1,11 +1,11 @@
 from PySide2.QtWidgets import *
 from PySide2.QtGui import *
 from PySide2.QtCore import *
-from data import Item
+from source.data import Data
 
 
 class NodeChaosPlayer(QWidget):
-    def __init__(self, parent):
+    def __init__(self, parent, item_editor):
         super(NodeChaosPlayer, self).__init__(parent=parent)
         self.setStyleSheet('''
                 QWidget{background-color:
@@ -13,6 +13,7 @@ class NodeChaosPlayer(QWidget):
                 color:rgb(255, 255, 255);
                 }
                 ''')
+        self.item_editor = item_editor
         self.current_node = None
         self.graph_view = parent
         self.layout = QVBoxLayout(self)
@@ -27,7 +28,7 @@ class NodeChaosPlayer(QWidget):
 
     def play(self, node):
         self.items.clear()
-        self.graph_view.get_item_editor().reset_items()
+        self.item_editor.reset_items()
         self.load_node(node)
 
     def load_node(self, node):
@@ -36,10 +37,10 @@ class NodeChaosPlayer(QWidget):
         self.model.clear()
         node.setSelected(True)
         for item in node.detail.items:
-            self.graph_view.get_item_editor().found_item(item)
+            self.item_editor.found_item(item)
             self.items.append(item)
         for connection in node.connections:
-            next_node = self.graph_view.node_data.get_node(connection.destination.node.id)
+            next_node = Data.get_node(connection.destination.node.id)
             if next_node:
                 if connection.path_item:
                     title = next_node.detail.title
