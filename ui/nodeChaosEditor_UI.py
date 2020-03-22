@@ -15,12 +15,16 @@ from PySide2.QtGui import (QBrush, QColor, QConicalGradient, QCursor, QFont,
     QRadialGradient)
 from PySide2.QtWidgets import *
 
+from ui import resources_rc
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         if MainWindow.objectName():
             MainWindow.setObjectName(u"MainWindow")
         MainWindow.resize(1015, 600)
+        icon = QIcon()
+        icon.addFile(u":/icons/icon.png", QSize(), QIcon.Normal, QIcon.Off)
+        MainWindow.setWindowIcon(icon)
         MainWindow.setStyleSheet(u"background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:0, y2:1, stop:0 rgba(50, 50, 50, 255), stop:1 rgba(100, 100, 100, 255));")
         self.action_save = QAction(MainWindow)
         self.action_save.setObjectName(u"action_save")
@@ -40,7 +44,8 @@ class Ui_MainWindow(object):
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QMenuBar(MainWindow)
         self.menubar.setObjectName(u"menubar")
-        self.menubar.setGeometry(QRect(0, 0, 1015, 26))
+        self.menubar.setGeometry(QRect(0, 0, 1015, 21))
+        self.menubar.setStyleSheet(u"color: rgb(255, 255, 255);")
         self.menu_file = QMenu(self.menubar)
         self.menu_file.setObjectName(u"menu_file")
         self.menuPlay = QMenu(self.menubar)
@@ -62,7 +67,7 @@ class Ui_MainWindow(object):
     # setupUi
 
     def retranslateUi(self, MainWindow):
-        MainWindow.setWindowTitle(QCoreApplication.translate("MainWindow", u"MainWindow", None))
+        MainWindow.setWindowTitle(QCoreApplication.translate("MainWindow", u"Node Chaos", None))
         self.action_save.setText(QCoreApplication.translate("MainWindow", u"Save", None))
         self.action_load.setText(QCoreApplication.translate("MainWindow", u"Load", None))
         self.actionPlay.setText(QCoreApplication.translate("MainWindow", u"Play", None))

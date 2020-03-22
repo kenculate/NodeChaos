@@ -1,0 +1,2 @@
+pyinstaller.exe nodeChaosEditor.spec
+pause
