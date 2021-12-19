@@ -133,7 +133,7 @@ class Node(QGraphicsItem):
         if not self.detail.title:
             painter.drawText(20, 20, f'{self.name} : {len(self.connections)}')
         else:
-            painter.drawText(20, 20, self.detail.title)
+            painter.drawText(20, 20, f'{self.detail.title} {self.detail.description}')
 
         if self.detail.text:
             painter.setPen(Qt.black)

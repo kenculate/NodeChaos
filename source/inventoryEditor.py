@@ -27,6 +27,7 @@ class InventoryEditor(QWidget):
         self.list_view.setModel(self.model)
 
     def load(self, items):
+        self.model.clear()
         for item in items:
             row = QStandardItem(item.name)
             row.setCheckable(True)

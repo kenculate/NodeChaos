@@ -6,6 +6,8 @@ class NodeDetail:
         self.node = node
         self.title = f'{node.name}_{str(node.id)[0:5]}'
         self.text = ''
+        self.description = ''
+        self.image = None
         self.items: [Item] = []
         self.required_items: [Item] = []
 
@@ -13,6 +15,8 @@ class NodeDetail:
         return {
             'title': self.title,
             'text': self.text,
+            'description': self.description,
+            'image': self.image,
             'items': self.items,
             'required_items': self.required_items
         }
@@ -21,7 +25,9 @@ class NodeDetail:
     def FromJson(node, data):
         detail = NodeDetail(node)
         detail.title = data.get('title', '')
+        detail.description = data.get('description', '')
         detail.text = data.get('text', '')
+        detail.image = data.get('image', '')
         items = data.get('items', [])
         detail.items = []
         for item in items:

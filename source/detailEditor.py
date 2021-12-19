@@ -48,15 +48,22 @@ class DetailEditor(QDialog):
         self.txt_title = QLineEdit()
         self.lbl_text = QLabel('text:')
         self.txt_text = QPlainTextEdit()
+        self.lbl_description = QLabel('description:')
+        self.txt_description = QPlainTextEdit()
+        self.pb_set_image = QPushButton('set image')
         self.pb_save = QPushButton('save')
         self.pb_close = QPushButton('close')
         self.layout.addWidget(self.lbl_title)
         self.layout.addWidget(self.txt_title)
+        self.layout.addWidget(self.lbl_description)
+        self.layout.addWidget(self.txt_description)
         self.layout.addWidget(self.lbl_text)
         self.layout.addWidget(self.txt_text)
+        self.layout.addWidget(self.pb_set_image)
         self.layout.addWidget(self.pb_save)
         self.layout.addWidget(self.pb_close)
         self.node = node
+        self.pb_set_image.clicked.connect(self.set_image)
         self.pb_close.clicked.connect(self.close)
         self.pb_save.clicked.connect(self.save)
         self.item_model = QStandardItemModel()
@@ -64,7 +71,14 @@ class DetailEditor(QDialog):
         self.list_required_item.setModel(self.required_item_model)
         self.list_item.setModel(self.item_model)
 
+    def set_image(self):
+        image, format = QFileDialog.getOpenFileName(self)
+        if image:
+            self.pb_set_image.setText(image)
+            self.node.detail.image = image
+
     def open(self, node):
+        self.pb_set_image.setText(node.detail.image or 'set image')
         self.item_model.clear()
         self.required_item_model.clear()
         # adding acquire items
@@ -85,12 +99,14 @@ class DetailEditor(QDialog):
             self.required_item_model.appendRow(row)
 
         self.txt_text.setPlainText(node.detail.text)
+        self.txt_description.setPlainText(node.detail.description)
         self.txt_title.setText(node.detail.title)
         self.node = node
         self.exec_()
 
     def save(self):
         self.node.detail.title = self.txt_title.text()
+        self.node.detail.description = self.txt_description.toPlainText()
         self.node.detail.text = self.txt_text.toPlainText()
         for row in range(self.item_model.rowCount()):
             index = self.item_model.index(row, 0)

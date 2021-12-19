@@ -27,9 +27,14 @@ class NodeChaosPlayer(QWidget):
         self.items = []
 
     def play(self, node):
+        self.show()
+
         self.items.clear()
         self.item_editor.reset_items()
         self.load_node(node)
+
+    def exit_play(self):
+        self.hide()
 
     def load_node(self, node):
         self.current_node = node
@@ -44,7 +49,8 @@ class NodeChaosPlayer(QWidget):
             if next_node:
                 if connection.path_item:
                     title = next_node.detail.title
-                    row = QStandardItem(title)
+                    description = next_node.detail.description
+                    row = QStandardItem(f'{title} {description}')
                     found_items = self.has_required_item(next_node.detail.required_items, self.items)
                     if not len(found_items):
                         title = f'(LOCKED){next_node.detail.title}'
